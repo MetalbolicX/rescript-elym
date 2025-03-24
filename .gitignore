@@ -1,0 +1,8 @@
+.DS_Store
+/node_modules/
+/lib/
+.bsb.lock
+.merlin
+/dist/
+.qodo
+/src/**/*.res.mjs

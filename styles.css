@@ -1,0 +1,90 @@
+:root {
+  --whitish-color: #f1f1f1;
+  --blackish-color: #333;
+  --grayish-color: #666;
+  --redish-color: #ff0000;
+  --greenish-color: #00ff00;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Roboto', sans-serif;
+  box-sizing: border-box;
+  background-color: #f1f1f1;
+}
+
+main {
+  display: flex;
+  flex-direction: column; /* Stack children vertically */
+  align-items: center; /* Center children horizontally */
+  justify-content: center; /* Center children vertically */
+  height: 100vh; /* Ensure the main element takes the full viewport height */
+
+  > * {
+    display: block;
+    margin-bottom: 1rem; /* Add some space between elements */
+  }
+
+  li {
+    list-style-type: none;
+  }
+}
+
+#todo__list {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+#todo__form {
+
+  & > * {
+    margin: 0.2em 0.25em;
+    font-size: 1.2em;
+  }
+
+  #todo__form-input {
+    border: 1px solid var(--grayish-color);
+    border-radius: 0.25em;
+    padding: 0.3em;
+
+    &:focus:valid {
+      border: 2px solid var(--greenish-color);
+    }
+
+    &:focus:invalid {
+      border: 2px solid var(--redish-color);
+    }
+  }
+
+  #todo__form-add-task-button {
+    background-color: var(--grayish-color);
+    color: var(--whitish-color);
+    border: none;
+    border-radius: 0.25em;
+    padding: 0.3em 0.5em;
+    cursor: pointer;
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+
+    &:hover {
+      background-color: var(--blackish-color);
+    }
+  }
+}
+
+.todo__list-task-container {
+  height: 100%;
+
+  & > * {
+    border-radius: 0.25em;
+    padding: 0.5em;
+    height: 100%;
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "name": "chessboard",
+  "version": "0.0.0",
+  "scripts": {
+    "build": "rescript build && bun build ./src/Index.res.mjs --outdir ./dist --format esm",
+    "res:build": "rescript",
+    "res:clean": "rescript clean",
+    "res:dev": "rescript -w",
+    "dev": "vite",
+    "start": "bun run build && vite"
+  },
+  "keywords": [
+    "rescript"
+  ],
+  "author": {
+    "name": "José Martínez Santana"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@rescript/core": "1.6.1",
+    "confirm-extended-dialog": "^1.0.6",
+    "rescript": "11.1.4"
+  },
+  "devDependencies": {
+    "vite": "^6.2.2"
+  }
+}
