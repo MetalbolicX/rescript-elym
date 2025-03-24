@@ -28,6 +28,7 @@ external elementQuerySelector: (Dom.element, string) => option<Dom.element> = "q
 @send
 external elementQuerySelectorAll: (Dom.element, string) => Dom.nodeList = "querySelectorAll"
 @send external remove: (Dom.element) => unit = "remove"
+@send external off: (Dom.element, string, unit => unit) => unit = "removeEventListener"
 
 type selection =
   | Single(option<Dom.element>)
@@ -100,6 +101,15 @@ let on: (selection, string, unit => unit) => selection = (sel, eventType, callba
   | Single(Some(el)) => addEventListener(el, eventType, callback)
   | Single(None) => Console.error("DomQuery: on - Single element is None.")
   | Multiple(elements) => elements->Array.forEach(el => addEventListener(el, eventType, callback))
+  }
+  sel
+}
+
+let off: (selection, string, unit => unit) => selection = (sel, eventType, callback) => {
+  switch sel {
+  | Single(Some(el)) => off(el, eventType, callback)
+  | Single(None) => Console.error("DomQuery: off - Single element is None.")
+  | Multiple(elements) => elements->Array.forEach(el => off(el, eventType, callback))
   }
   sel
 }

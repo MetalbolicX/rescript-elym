@@ -15,16 +15,21 @@ let createTask: string => Elym.selection = content => {
     | None => taskDescription->Elym.setAttr("disabled", "")->ignore
     }
   })->ignore
+  task->Elym.selectChild(".todo__list-task-description")
+  ->Elym.on("blur", _ => {
+    let taskDescription = task->Elym.selectChild(".todo__list-task-description")
+    taskDescription->Elym.setAttr("disabled", "")->ignore
+  })->ignore
   task->Elym.selectChild(".todo__list-delete-task-button")
   ->Elym.on("click", _ => {
-    Console.log("Task deleted")
+    // TODO: Implement task deletion and remove the function of the event listener first.
     task->Elym.remove
   })->ignore
   task
 }
 
 let formTodoInput = Elym.select("#todo__form-input")
-let buttonAddTodo = Elym.select("#todo__form-add-task-button")
+let formButtonAddTodo = Elym.select("#todo__form-add-task-button")
 let todoList = Elym.select("#todo__list")
 
 formTodoInput
@@ -32,16 +37,16 @@ formTodoInput
   switch formTodoInput->Elym.getValue {
   | Some(text) =>
     if String.length(text) > 3 {
-      buttonAddTodo->Elym.rmAttr("disabled")->ignore
+      formButtonAddTodo->Elym.rmAttr("disabled")->ignore
     } else {
-      buttonAddTodo->Elym.setAttr("disabled", "")->ignore
+      formButtonAddTodo->Elym.setAttr("disabled", "")->ignore
     }
   | None => ()
   }
 })
 ->ignore
 
-buttonAddTodo
+formButtonAddTodo
 ->Elym.on("click", _ => {
   switch formTodoInput->Elym.getValue {
   | Some(text) =>
