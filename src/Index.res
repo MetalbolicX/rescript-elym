@@ -3,11 +3,11 @@ let createTask: string => Elym.selection = content => {
     <li class="todo__list-task">
         <div class="todo__list-task-content">
             <textarea class="todo__list-task-description" placeholder="Enter your task here" disabled>${content}</textarea>
-            <button class="todo__list-edit-task-button">✏</button>
-            <button class="todo__list-delete-task-button">🗑</button>
+            <button class="todo__list-task-button-edit">✏</button>
+            <button class="todo__list-task-button-delete">🗑</button>
         </div>
     </li>`)
-  task->Elym.selectChild(".todo__list-edit-task-button")
+  task->Elym.selectChild(".todo__list-task-button-edit")
   ->Elym.on("click", _ => {
     let taskDescription = task->Elym.selectChild(".todo__list-task-description")
     switch taskDescription->Elym.getAttr("disabled") {
@@ -20,7 +20,7 @@ let createTask: string => Elym.selection = content => {
     let taskDescription = task->Elym.selectChild(".todo__list-task-description")
     taskDescription->Elym.setAttr("disabled", "")->ignore
   })->ignore
-  task->Elym.selectChild(".todo__list-delete-task-button")
+  task->Elym.selectChild(".todo__list-task-button-delete")
   ->Elym.on("click", _ => {
     // TODO: Implement task deletion and remove the function of the event listener first.
     task->Elym.remove
