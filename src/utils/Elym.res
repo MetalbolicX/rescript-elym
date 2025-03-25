@@ -17,8 +17,6 @@ external addEventListener: (Dom.element, string, unit => unit) => unit = "addEve
 // @send external item: (Dom.nodeList, int) => Dom.node = "item"
 @send external item: (Dom.nodeList, int) => Nullable.t<Dom.element> = "item"
 @send external getAttribute: (Dom.element, string) => option<string> = "getAttribute"
-// @send external getTextContent: (Dom.element) => string = "textContent"
-// @send external setTextContent: (Dom.element, string) => unit = "textContent"
 @get external getInnerText: Dom.element => option<string> = "innerText"
 @set external setInnerText: (Dom.element, string) => unit = "innerText"
 @get external getValue: Dom.element => option<string> = "value"
@@ -27,7 +25,7 @@ external addEventListener: (Dom.element, string, unit => unit) => unit = "addEve
 external elementQuerySelector: (Dom.element, string) => option<Dom.element> = "querySelector"
 @send
 external elementQuerySelectorAll: (Dom.element, string) => Dom.nodeList = "querySelectorAll"
-@send external remove: (Dom.element) => unit = "remove"
+@send external remove: Dom.element => unit = "remove"
 @send external off: (Dom.element, string, unit => unit) => unit = "removeEventListener"
 
 type selection =
@@ -167,7 +165,8 @@ let getValue: selection => option<string> = sel => {
 
 let selectChild: (selection, string) => selection = (sel, selector) => {
   switch sel {
-  | Single(Some(el)) => // Find the first matching child element using elementQuerySelector
+  | Single(Some(el)) =>
+    // Find the first matching child element using elementQuerySelector
     Single(el->elementQuerySelector(selector))
   | Single(None) => {
       Console.error("DomQuery: selectChild - Single element is None.")
