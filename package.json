@@ -1,5 +1,5 @@
 {
-  "name": "chessboard",
+  "name": "todo",
   "version": "0.0.0",
   "scripts": {
     "build": "rescript build && bun build ./src/Index.res.mjs --outdir ./dist --format esm",
@@ -19,9 +19,11 @@
   "dependencies": {
     "@rescript/core": "1.6.1",
     "confirm-extended-dialog": "^1.0.6",
-    "rescript": "11.1.4"
+    "rescript": "11.1.4",
+    "vanjs-core": "^1.5.3"
   },
   "devDependencies": {
+    "typescript": "^5.8.2",
     "vite": "^6.2.2"
   }
 }

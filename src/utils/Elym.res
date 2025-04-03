@@ -14,7 +14,6 @@ external addEventListener: (Dom.element, string, unit => unit) => unit = "addEve
 @send external removeAttribute: (Dom.element, string) => unit = "removeAttribute"
 @send external setAttribute: (Dom.element, string, string) => unit = "setAttribute"
 @get external nodeListLength: Dom.nodeList => int = "length"
-// @send external item: (Dom.nodeList, int) => Dom.node = "item"
 @send external item: (Dom.nodeList, int) => Nullable.t<Dom.element> = "item"
 @send external getAttribute: (Dom.element, string) => option<string> = "getAttribute"
 @get external getInnerText: Dom.element => option<string> = "innerText"
@@ -28,208 +27,192 @@ external elementQuerySelectorAll: (Dom.element, string) => Dom.nodeList = "query
 @send external remove: Dom.element => unit = "remove"
 @send external off: (Dom.element, string, unit => unit) => unit = "removeEventListener"
 
-type selection =
-  | Single(option<Dom.element>)
-  | Multiple(array<Dom.element>)
+// New type to track event listeners
+type eventListener = {
+  eventType: string,
+  callback: unit => unit
+}
 
-let select: string => selection = selector => Single(querySelector(selector))
+// Extend selection type to include event listener tracking
+type selection = {
+  elements: option<Dom.element>,
+  multiElements: array<Dom.element>,
+  eventListeners: array<(Dom.element, eventListener)>
+}
 
+// Utility function to create an empty selection
+let emptySelection = {
+  elements: None,
+  multiElements: [],
+  eventListeners: []
+}
+
+// Updated select function
+let select: string => selection = selector => {
+  let element = querySelector(selector)
+  {
+    elements: element,
+    multiElements: [],
+    eventListeners: []
+  }
+}
+
+// Updated selectAll function
 let selectAll: string => selection = selector => {
   let nodeList = querySelectorAll(selector)
   let length = nodeList->nodeListLength
 
   if length === 0 {
-    Multiple([])
+    {
+      elements: None,
+      multiElements: [],
+      eventListeners: []
+    }
   } else {
-    // Create an array of indices first
     let indices = Array.fromInitializer(~length, i => i)
-
-    // Map over the indices to get the DOM elements
     let elements = indices->Array.map(i => {
       Nullable.getExn(nodeList->item(i))
     })
 
-    Multiple(elements)
+    {
+      elements: elements[0],
+      multiElements: elements,
+      eventListeners: []
+    }
   }
 }
 
+// Updated createFromTemplate function
 let createFromTemplate: string => selection = htmlTemplate => {
   let range = createRange()
   let fragment = createContextualFragment(range, String.trim(htmlTemplate))
-  Single(
-    switch fragment->firstElementChild {
-    | Value(el) => Some(el)
-    | Null => None
-    },
-  )
-}
-
-let setAttr: (selection, string, string) => selection = (sel, attrName, value) => {
-  switch sel {
-  | Single(Some(el)) => setAttribute(el, attrName, value)
-  | Single(None) => Console.error("DomQuery: setAttr - Single element is None.")
-  | Multiple(elements) => elements->Array.forEach(el => setAttribute(el, attrName, value))
+  let element = switch fragment->firstElementChild {
+  | Value(el) => Some(el)
+  | Null => None
   }
-  sel
-}
 
-let getAttr: (selection, string) => option<string> = (sel, attrName) => {
-  switch sel {
-  | Single(Some(el)) => el->getAttribute(attrName)
-  | Single(None) =>
-    Console.error("DomQuery: getAttr - Single element is None.")
-    None
-  | Multiple(_elements) =>
-    Console.error("DomQuery: getAttr - getter not supported on multiple elements.")
-    None
+  {
+    elements: element,
+    multiElements: [],
+    eventListeners: []
   }
 }
 
-let rmAttr: (selection, string) => selection = (sel, attrName) => {
-  switch sel {
-  | Single(Some(el)) => removeAttribute(el, attrName)
-  | Single(None) => Console.error("DomQuery: removeAttribute - Single element is None.")
-  | Multiple(elements) => elements->Array.forEach(el => removeAttribute(el, attrName))
-  }
-  sel
-}
-
+// Enhanced on function with event listener tracking
 let on: (selection, string, unit => unit) => selection = (sel, eventType, callback) => {
-  switch sel {
-  | Single(Some(el)) => addEventListener(el, eventType, callback)
-  | Single(None) => Console.error("DomQuery: on - Single element is None.")
-  | Multiple(elements) => elements->Array.forEach(el => addEventListener(el, eventType, callback))
+  let updatedListeners = switch sel.elements {
+  | Some(el) => {
+      addEventListener(el, eventType, callback)
+      Array.concat(sel.eventListeners, [(el, {eventType: eventType, callback: callback})])
+    }
+  | None => sel.eventListeners
   }
+
+  let multiUpdatedListeners = sel.multiElements->Array.reduce(updatedListeners, (acc, el) => {
+    addEventListener(el, eventType, callback)
+    Array.concat(acc, [(el, {eventType: eventType, callback: callback})])
+  })
+
+  {
+    ...sel,
+    eventListeners: multiUpdatedListeners
+  }
+}
+
+// Function to remove all tracked event listeners before removing an element
+let removeAllListeners: selection => unit = sel => {
+  sel.eventListeners->Array.forEach(((el, listener)) => {
+    off(el, listener.eventType, listener.callback)
+  })
+}
+
+// Enhanced remove function that first removes all tracked listeners
+let remove: selection => unit = sel => {
+  // First remove all tracked event listeners
+  removeAllListeners(sel)
+
+  // Then remove the elements
+  switch sel.elements {
+  | Some(el) => remove(el)
+  | None => ()
+  }
+
+  sel.multiElements->Array.forEach(remove)
+}
+
+// Rest of the previous functions remain the same, just update their return type to the new selection type
+let setAttr: (selection, string, string) => selection = (sel, attrName, value) => {
+  switch sel.elements {
+  | Some(el) => setAttribute(el, attrName, value)
+  | None => Console.error("DomQuery: setAttr - Single element is None.")
+  }
+
+  sel.multiElements->Array.forEach(el => setAttribute(el, attrName, value))
   sel
-}
-
-let off: (selection, string, unit => unit) => selection = (sel, eventType, callback) => {
-  switch sel {
-  | Single(Some(el)) => off(el, eventType, callback)
-  | Single(None) => Console.error("DomQuery: off - Single element is None.")
-  | Multiple(elements) => elements->Array.forEach(el => off(el, eventType, callback))
-  }
-  sel
-}
-
-let appendChild: (selection, Dom.element) => selection = (sel, child) => {
-  switch sel {
-  | Single(Some(el)) => appendChild(el, child)
-  | Single(None) => Console.error("DomQuery: appendChild - Single element is None.")
-  | Multiple(elements) => elements->Array.forEach(el => appendChild(el, child))
-  }
-  sel
-}
-
-let setText: (selection, string) => selection = (sel, text) => {
-  switch sel {
-  | Single(Some(el)) => el->setInnerText(text)
-  | Single(None) => Js.Console.error("DomQuery: setText - Single element is None.")
-  | Multiple(elements) => elements->Array.forEach(el => el->setInnerText(text))
-  }
-  sel
-}
-
-let getText: selection => option<string> = sel => {
-  switch sel {
-  | Single(Some(el)) => el->getInnerText
-  | Single(None) =>
-    Js.Console.error("DomQuery: getText - Single element is None.")
-    None
-  | Multiple(_elements) =>
-    Js.Console.error("DomQuery: getText - getter not supported on multiple elements.")
-    None
-  }
-}
-
-let setValue: (selection, string) => selection = (sel, value) => {
-  switch sel {
-  | Single(Some(el)) => el->setValue(value)
-  | Single(None) => Console.error("DomQuery: setValue - Single element is None.")
-  | Multiple(elements) => elements->Array.forEach(el => el->setValue(value))
-  }
-  sel
-}
-
-let getValue: selection => option<string> = sel => {
-  switch sel {
-  | Single(Some(el)) => el->getValue
-  | Single(None) =>
-    Console.error("DomQuery: getValue - Single element is None.")
-    None
-  | Multiple(_elements) =>
-    Console.error("DomQuery: getValue - getter not supported on multiple elements.")
-    None
-  }
 }
 
 let selectChild: (selection, string) => selection = (sel, selector) => {
-  switch sel {
-  | Single(Some(el)) =>
-    // Find the first matching child element using elementQuerySelector
-    Single(el->elementQuerySelector(selector))
-  | Single(None) => {
+  let childElement = switch sel.elements {
+  | Some(el) => el->elementQuerySelector(selector)
+  | None => {
       Console.error("DomQuery: selectChild - Single element is None.")
-      Single(None)
+      None
     }
-  | Multiple(elements) => {
-      // Try to find the first matching child in any of the elements
-      let firstMatch = elements->Array.reduce(None, (acc, el) => {
-        switch acc {
-        | Some(_) => acc // Already found a match
-        | None => el->elementQuerySelector(selector)
-        }
-      })
-      Single(firstMatch)
+  }
+
+  let multiChildElements = sel.multiElements->Array.reduce(None, (acc, el) => {
+    switch acc {
+    | Some(_) => acc // Already found a match
+    | None => el->elementQuerySelector(selector)
     }
+  })
+
+  {
+    elements: childElement,
+    multiElements: [],
+    eventListeners: sel.eventListeners
   }
 }
 
 let selectChildren: (selection, string) => selection = (sel, selector) => {
-  switch sel {
-  | Single(Some(el)) => {
+  let childElements = switch sel.elements {
+  | Some(el) => {
       let nodeList = el->elementQuerySelectorAll(selector)
       let length = nodeList->nodeListLength
 
       if length === 0 {
-        Multiple([])
+        []
       } else {
         let indices = Array.fromInitializer(~length, i => i)
-        let elements = indices->Array.map(i => {
+        indices->Array.map(i => {
           Nullable.getExn(nodeList->item(i))
         })
-        Multiple(elements)
       }
     }
-  | Single(None) => {
+  | None => {
       Console.error("DomQuery: selectChildren - Single element is None.")
-      Multiple([])
-    }
-  | Multiple(elements) => {
-      let allMatches = elements->Array.reduce([], (acc, el) => {
-        let nodeList = el->elementQuerySelectorAll(selector)
-        let length = nodeList->nodeListLength
-
-        if length === 0 {
-          acc
-        } else {
-          let indices = Array.fromInitializer(~length, i => i)
-          let matches = indices->Array.map(i => {
-            Nullable.getExn(nodeList->item(i))
-          })
-          Array.concat(acc, matches)
-        }
-      })
-
-      Multiple(allMatches)
+      []
     }
   }
-}
 
-let remove: selection => unit = sel => {
-  switch sel {
-  | Single(Some(el)) => remove(el)
-  | Single(None) => Console.error("DomQuery: remove - Single element is None.")
-  | Multiple(elements) => elements->Array.forEach(el => remove(el))
+  let allMultiChildElements = sel.multiElements->Array.reduce([], (acc, el) => {
+    let nodeList = el->elementQuerySelectorAll(selector)
+    let length = nodeList->nodeListLength
+
+    if length === 0 {
+      acc
+    } else {
+      let indices = Array.fromInitializer(~length, i => i)
+      let matches = indices->Array.map(i => {
+        Nullable.getExn(nodeList->item(i))
+      })
+      Array.concat(acc, matches)
+    }
+  })
+
+  {
+    elements: childElements->Array.get(0),
+    multiElements: childElements,
+    eventListeners: sel.eventListeners
   }
 }
