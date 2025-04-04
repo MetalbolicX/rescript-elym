@@ -6,3 +6,4 @@
 /dist/
 .qodo
 /src/**/*.res.mjs
+/test/**/*.res.mjs
