@@ -14,7 +14,7 @@ open Assertions
 @get external getId: Dom.element => string = "id"
 
 // Test utilities
-let setup = () => {
+let setup: unit => Dom.element = () => {
   let element = document->createElement("div")
   element->setId("100")
   element->setTextContent("Hello Rescript test")
@@ -23,9 +23,7 @@ let setup = () => {
   element
 }
 
-let teardown = element => {
-  element->remove
-}
+let teardown: Dom.element => unit = element => element->remove
 
 test("DOM element exists and has correct content", () => {
   let container = setup()
@@ -48,5 +46,5 @@ test("DOM element exists and has correct content", () => {
   | None => isTruthy(false, ~message="The container does not have the id of 100")
   }
 
-  teardown(container)
+  container->teardown
 })
