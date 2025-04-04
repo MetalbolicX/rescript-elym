@@ -18,6 +18,9 @@ external querySelector: (element, string) => option<Dom.element> = "querySelecto
 @send external setAttribute: (Dom.element, string, string) => unit = "setAttribute"
 @send external getAttribute: (Dom.element, string) => option<string> = "getAttribute"
 
+@get external getTextContent: Dom.element => option<string> = "textContent"
+@set external setTextContent: (Dom.element, string) => unit = "textContent"
+
 let select: string => selection = selector => Single(document->querySelector(selector))
 
 let selectAll: string => selection = selector => {
@@ -101,7 +104,26 @@ let getAttr: (selection, string) => option<string> = (sel, attrName) => {
     }
   }
 }
+let setText: (selection, string) => selection = (sel, text) => {
+  switch sel {
+  | Single(Some(el)) => el->setTextContent(text)
+  | Single(None) => Console.error("Elym: setText - Single element is None.")
+  | Multiple(elements) => elements->Array.forEach(el => el->setTextContent(text))
+  }
+  sel
+}
 
+let getText: selection => option<string> = sel => {
+  switch sel {
+  | Single(Some(el)) => el->getTextContent
+  | Single(None) =>
+    Console.error("Elym: getText - Single element is None.")
+    None
+  | Multiple(_) =>
+    Console.error("Elym: getText - getter not supported on multiple elements.")
+    None
+  }
+}
 // let createFromTemplate: string => selection = template => {
 //   let parser = new Dom.DOMParser()
 //   let doc = parser->parseFromString(template, "text/html")

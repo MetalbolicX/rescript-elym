@@ -10,8 +10,8 @@ let getAttr: (selection, string) => option<string>
 // let rmAttr: (selection, string) => selection
 // let on: (selection, string, unit => unit) => selection
 // let appendChild: (selection, Dom.element) => selection
-// let setText: (selection, string) => selection
-// let getText: selection => option<string>
+let setText: (selection, string) => selection
+let getText: selection => option<string>
 // let getValue: selection => option<string>
 // let setValue: (selection, string) => selection
 let selectChild: (selection, string) => selection

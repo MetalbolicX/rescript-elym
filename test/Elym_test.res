@@ -46,5 +46,14 @@ test("DOM element exists and has correct content", () => {
   | None => isTruthy(false, ~message="The container does not have the id of 100")
   }
 
+  let hello = selection->Elym.getText
+  Console.log(hello)
+  switch hello {
+  | Some(txt) =>
+    txt->isTextEqual("Hello Rescript test", ~message="The comtainer text is: Hello Rescript test")
+  | None =>
+    isTruthy(false, ~message="The container text does not have the phrase 'Hello Rescript test'")
+  }
+
   container->teardown
 })
