@@ -82,5 +82,12 @@ test("DOM element exists and has correct content", () => {
     | None => isTruthy(true, ~message="The container data-id was successfully removed")
   }
 
+  selection->Elym.addClass("hello")->ignore
+  let hasClassHello = selection->Elym.classed("hello")
+  switch hasClassHello {
+    | Some(t) => isTruthy(t, ~message="The container has the class 'hello'")
+    | None => isTruthy(false, ~message="The container does not have the class 'hello'. Elym addClass was not able to add the class")
+  }
+
   container->teardown
 })

@@ -14,9 +14,13 @@ external querySelector: (Dom.element, string) => option<Dom.element> = "querySel
 @send external item: (Dom.nodeList, int) => Nullable.t<Dom.element> = "item"
 
 @send external setAttribute: (Dom.element, string, string) => unit = "setAttribute"
-
 @send @return(nullable)
 external getAttribute: (Dom.element, string) => option<string> = "getAttribute"
+
+@get external classList: Dom.element => Dom.domTokenList = "classList"
+@send external add: (Dom.domTokenList, string) => unit = "add"
+@send external remove: (Dom.domTokenList, string) => unit = "remove"
+@send external contains: (Dom.domTokenList, string) => option<bool> = "contains"
 
 @get external getTextContent: Dom.element => option<string> = "textContent"
 @set external setTextContent: (Dom.element, string) => unit = "textContent"
@@ -136,9 +140,41 @@ let getText: selection => option<string> = sel => {
 
 let removeAttr: (selection, string) => selection = (sel, attrName) => {
   switch sel {
-  | Single(Some(el)) => removeAttribute(el, attrName)
+  | Single(Some(el)) => el->removeAttribute(attrName)
   | Single(None) => Console.error("Elym: removeAttribute - Single element is None.")
-  | Multiple(elements) => elements->Array.forEach(el => removeAttribute(el, attrName))
+  | Multiple(elements) => elements->Array.forEach(el => el->removeAttribute(attrName))
   }
   sel
+}
+
+let addClass: (selection, string) => selection = (sel, className) => {
+  switch sel {
+  | Single(Some(el)) => el->classList->add(className)
+  | Single(None) => Console.error("Elym: addClass - Single element is None.")
+  | Multiple(elements) => elements->Array.forEach(el => el->classList->add(className))
+  }
+  sel
+}
+
+let removeClass: (selection, string) => selection = (sel, className) => {
+  switch sel {
+  | Single(Some(el)) => el->classList->remove(className)
+  | Single(None) => Console.error("Elym: removeClass - Single element is None.")
+  | Multiple(elements) => elements->Array.forEach(el => el->classList->remove(className))
+  }
+  sel
+}
+
+let classed: (selection, string) => option<bool> = (sel, className) => {
+  switch sel {
+  | Single(Some(el)) => el->classList->contains(className)
+  | Single(None) => {
+      Console.error("Elym: classed - Single element is None.")
+      None
+    }
+  | Multiple(_) => {
+      Console.error("Elym: classed - Multiple elements is None")
+      None
+    }
+  }
 }

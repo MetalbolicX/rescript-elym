@@ -18,3 +18,6 @@ let selectChild: (selection, string) => selection
 let selectChildren: (selection, string) => selection
 // let remove: selection => unit
 // let off: (selection, string, unit => unit) => selection
+let addClass: (selection, string) => selection
+let removeClass: (selection, string) => selection
+let classed: (selection, string) => option<bool>
