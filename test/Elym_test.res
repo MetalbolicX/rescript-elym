@@ -57,8 +57,8 @@ test("DOM element exists and has correct content", () => {
   selection->Elym.setAttr("data-id", "abc")->ignore
   let dataId = selection->Elym.getAttr("data-id")
   switch dataId {
-    | Some(txt) => txt->isTextEqualTo("abc", ~message="The container data-id is 'abc'")
-    | None => isTruthy(false, ~message="The container data-id is not 'abc', it was not able to be set")
+    | Some(txt) => txt->isTextEqualTo("abc", ~message="The container data-id is 'abc'. It was correctly set using Elym")
+    | None => isTruthy(false, ~message="The container data-id is not 'abc', it was not able to be set using Elym")
   }
 
   container->teardown
