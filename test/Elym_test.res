@@ -42,17 +42,23 @@ test("DOM element exists and has correct content", () => {
     id
     ->Belt.Int.fromString
     ->Belt.Option.getExn
-    ->isIntegerEqual(100, ~message="The id of the container is equal to 100")
+    ->isIntEqualTo(100, ~message="The id of the container is equal to 100")
   | None => isTruthy(false, ~message="The container does not have the id of 100")
   }
 
   let hello = selection->Elym.getText
-  Console.log(hello)
   switch hello {
   | Some(txt) =>
-    txt->isTextEqual("Hello Rescript test", ~message="The comtainer text is: Hello Rescript test")
+    txt->isTextEqualTo("Hello Rescript test", ~message="The comtainer text content is: Hello Rescript test")
   | None =>
-    isTruthy(false, ~message="The container text does not have the phrase 'Hello Rescript test'")
+    isTruthy(false, ~message="The container text content does not have the phrase 'Hello Rescript test'")
+  }
+
+  selection->Elym.setAttr("data-id", "abc")->ignore
+  let dataId = selection->Elym.getAttr("data-id")
+  switch dataId {
+    | Some(txt) => txt->isTextEqualTo("abc", ~message="The container data-id is 'abc'")
+    | None => isTruthy(false, ~message="The container data-id is not 'abc', it was not able to be set")
   }
 
   container->teardown
