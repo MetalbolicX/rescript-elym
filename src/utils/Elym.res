@@ -165,7 +165,7 @@ let removeClass: (selection, string) => selection = (sel, className) => {
   sel
 }
 
-let classed: (selection, string) => option<bool> = (sel, className) => {
+let isClassed: (selection, string) => option<bool> = (sel, className) => {
   switch sel {
   | Single(Some(el)) => el->classList->contains(className)
   | Single(None) => {

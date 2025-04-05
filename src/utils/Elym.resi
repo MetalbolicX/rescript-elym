@@ -20,4 +20,4 @@ let selectChildren: (selection, string) => selection
 // let off: (selection, string, unit => unit) => selection
 let addClass: (selection, string) => selection
 let removeClass: (selection, string) => selection
-let classed: (selection, string) => option<bool>
+let isClassed: (selection, string) => option<bool>
