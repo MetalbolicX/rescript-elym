@@ -7,7 +7,7 @@ let selectAll: string => selection
 // let createFromTemplate: string => selection
 let setAttr: (selection, string, string) => selection
 let getAttr: (selection, string) => option<string>
-// let rmAttr: (selection, string) => selection
+let removeAttr: (selection, string) => selection
 // let on: (selection, string, unit => unit) => selection
 // let appendChild: (selection, Dom.element) => selection
 let setText: (selection, string) => selection

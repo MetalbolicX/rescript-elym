@@ -1,5 +1,5 @@
 type element =
-  | Document(Dom.document)
+  | Doc(Dom.document)
   | Element(Dom.element)
 
 type selection =
@@ -20,6 +20,8 @@ external querySelector: (element, string) => option<Dom.element> = "querySelecto
 
 @get external getTextContent: Dom.element => option<string> = "textContent"
 @set external setTextContent: (Dom.element, string) => unit = "textContent"
+
+@send external removeAttribute: (Dom.element, string) => unit = "removeAttribute"
 
 let select: string => selection = selector => Single(document->querySelector(selector))
 
@@ -131,3 +133,12 @@ let getText: selection => option<string> = sel => {
 //   let element = body->querySelector("*")
 //   Single(Some(element))
 // }
+
+let removeAttr: (selection, string) => selection = (sel, attrName) => {
+  switch sel {
+  | Single(Some(el)) => removeAttribute(el, attrName)
+  | Single(None) => Console.error("Elym: removeAttribute - Single element is None.")
+  | Multiple(elements) => elements->Array.forEach(el => removeAttribute(el, attrName))
+  }
+  sel
+}

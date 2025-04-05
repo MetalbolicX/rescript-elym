@@ -49,16 +49,37 @@ test("DOM element exists and has correct content", () => {
   let hello = selection->Elym.getText
   switch hello {
   | Some(txt) =>
-    txt->isTextEqualTo("Hello Rescript test", ~message="The comtainer text content is: Hello Rescript test")
+    txt->isTextEqualTo(
+      "Hello Rescript test",
+      ~message="The comtainer text content is: Hello Rescript test",
+    )
   | None =>
-    isTruthy(false, ~message="The container text content does not have the phrase 'Hello Rescript test'")
+    isTruthy(
+      false,
+      ~message="The container text content does not have the phrase 'Hello Rescript test'",
+    )
   }
 
   selection->Elym.setAttr("data-id", "abc")->ignore
   let dataId = selection->Elym.getAttr("data-id")
   switch dataId {
-    | Some(txt) => txt->isTextEqualTo("abc", ~message="The container data-id is 'abc'. It was correctly set using Elym")
-    | None => isTruthy(false, ~message="The container data-id is not 'abc', it was not able to be set using Elym")
+  | Some(id) =>
+    id->isTextEqualTo(
+      "abc",
+      ~message="The container data-id is 'abc'. It was correctly set using Elym",
+    )
+  | None =>
+    isTruthy(
+      false,
+      ~message="The container data-id is not 'abc', it was not able to be set using Elym",
+    )
+  }
+
+  selection->Elym.removeAttr("data-id")->ignore
+  let rmDataId = selection->Elym.getAttr("data-id")
+  switch rmDataId {
+    | Some(id) => id->isTextEqualTo("abc", ~message="The container data-id still exists. It was not removed")
+    | None => isTruthy(true, ~message="The container data-id was successfully removed")
   }
 
   container->teardown
