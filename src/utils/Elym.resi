@@ -21,3 +21,4 @@ let selectChildren: (selection, string) => selection
 let addClass: (selection, string) => selection
 let removeClass: (selection, string) => selection
 let isClassed: (selection, string) => option<bool>
+let toggleClass: (selection, string, ~isForced: option<bool>=?) => selection

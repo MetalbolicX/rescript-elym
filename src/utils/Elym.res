@@ -21,6 +21,7 @@ external getAttribute: (Dom.element, string) => option<string> = "getAttribute"
 @send external add: (Dom.domTokenList, string) => unit = "add"
 @send external remove: (Dom.domTokenList, string) => unit = "remove"
 @send external contains: (Dom.domTokenList, string) => option<bool> = "contains"
+@send external toggle: (Dom.domTokenList, string, option<bool>) => unit = "toggle"
 
 @get external getTextContent: Dom.element => option<string> = "textContent"
 @set external setTextContent: (Dom.element, string) => unit = "textContent"
@@ -169,12 +170,32 @@ let isClassed: (selection, string) => option<bool> = (sel, className) => {
   switch sel {
   | Single(Some(el)) => el->classList->contains(className)
   | Single(None) => {
-      Console.error("Elym: classed - Single element is None.")
+      Console.error("Elym: isClassed - Single element is None.")
       None
     }
   | Multiple(_) => {
-      Console.error("Elym: classed - Multiple elements is None")
+      Console.error("Elym: isClassed - Multiple elements is None")
       None
     }
   }
+}
+
+let toggleClass: (selection, string, ~isForced: option<bool>=?) => selection = (sel, className, ~isForced=?) => {
+  switch sel {
+  | Single(Some(el)) =>
+    switch isForced {
+    | Some(force) => el->classList->toggle(className, force)
+    | None => el->classList->toggle(className, None)
+    }
+  | Single(None) => Console.error("Elym: toggleClass - Single element is None.")
+  | Multiple(elements) =>
+    elements->Array.forEach(el => {
+      switch isForced {
+      | Some(force) => el->classList->toggle(className, force)
+      | None => el->classList->toggle(className, None)
+      }
+    })
+  }
+  sel
+
 }

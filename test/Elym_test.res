@@ -115,5 +115,12 @@ test("The class attribute API that add, removes, toggles, etc.", () => {
     isTruthy(false, ~message="The container was not able to be added using Elym addClass function.")
   }
 
+  selection->Elym.toggleClass("visible")->ignore
+  let isVisible = selection->Elym.isClassed("visible")
+  switch isVisible {
+    | Some(t) => isTruthy(t, ~message="The container has the visible class, it was added using the Elym toogleClass function")
+    | None => isTruthy(false, ~message="The container, visible class was not added using the Elym toogleClass function")
+  }
+
   container->teardown
 })
