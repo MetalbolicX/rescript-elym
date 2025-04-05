@@ -1,17 +1,15 @@
-type element =
-  | Doc(Dom.document)
-  | Element(Dom.element)
-
 type selection =
   | Single(option<Dom.element>)
   | Multiple(array<Dom.element>)
 
-@val external document: element = "document"
+@val external document: Dom.document = "document"
 
 @send @return(nullable)
-external querySelector: (element, string) => option<Dom.element> = "querySelector"
-
-@send external querySelectorAll: (element, string) => Dom.nodeList = "querySelectorAll"
+external docQuerySelector: (Dom.document, string) => option<Dom.element> = "querySelector"
+@send @return(nullable)
+external querySelector: (Dom.element, string) => option<Dom.element> = "querySelector"
+@send external docQuerySelectorAll: (Dom.document, string) => Dom.nodeList = "querySelectorAll"
+@send external querySelectorAll: (Dom.element, string) => Dom.nodeList = "querySelectorAll"
 @get external nodeListLength: Dom.nodeList => int = "length"
 @send external item: (Dom.nodeList, int) => Nullable.t<Dom.element> = "item"
 
@@ -23,10 +21,10 @@ external querySelector: (element, string) => option<Dom.element> = "querySelecto
 
 @send external removeAttribute: (Dom.element, string) => unit = "removeAttribute"
 
-let select: string => selection = selector => Single(document->querySelector(selector))
+let select: string => selection = selector => Single(document->docQuerySelector(selector))
 
 let selectAll: string => selection = selector => {
-  let nodes = document->querySelectorAll(selector)
+  let nodes = document->docQuerySelectorAll(selector)
   let length = nodeListLength(nodes)
 
   if length == 0 {
@@ -40,13 +38,13 @@ let selectAll: string => selection = selector => {
 
 let selectChild: (selection, string) => selection = (sel, selector) => {
   switch sel {
-  | Single(Some(element)) => Single(Element(element)->querySelector(selector))
+  | Single(Some(element)) => Single(element->querySelector(selector))
   | Single(None) => Single(None)
   | Multiple(elements) =>
     let firstMatch = elements->Array.reduce(None, (acc, el) => {
       switch acc {
       | Some(_) => acc // Already found a match
-      | None => Element(el)->querySelector(selector)
+      | None => el->querySelector(selector)
       }
     })
     Single(firstMatch)
@@ -56,7 +54,7 @@ let selectChild: (selection, string) => selection = (sel, selector) => {
 let selectChildren: (selection, string) => selection = (sel, selector) => {
   switch sel {
   | Single(Some(element)) =>
-    let nodeList = Element(element)->querySelectorAll(selector)
+    let nodeList = element->querySelectorAll(selector)
     let length = nodeListLength(nodeList)
 
     if length == 0 {
@@ -69,7 +67,7 @@ let selectChildren: (selection, string) => selection = (sel, selector) => {
   | Single(None) => Multiple([])
   | Multiple(elements) =>
     let allMatches = elements->Array.reduce([], (acc, el) => {
-      let nodeList = Element(el)->querySelectorAll(selector)
+      let nodeList = el->querySelectorAll(selector)
       let length = nodeListLength(nodeList)
 
       if length == 0 {
