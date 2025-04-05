@@ -14,7 +14,9 @@ external querySelector: (Dom.element, string) => option<Dom.element> = "querySel
 @send external item: (Dom.nodeList, int) => Nullable.t<Dom.element> = "item"
 
 @send external setAttribute: (Dom.element, string, string) => unit = "setAttribute"
-@send external getAttribute: (Dom.element, string) => option<string> = "getAttribute"
+
+@send @return(nullable)
+external getAttribute: (Dom.element, string) => option<string> = "getAttribute"
 
 @get external getTextContent: Dom.element => option<string> = "textContent"
 @set external setTextContent: (Dom.element, string) => unit = "textContent"
