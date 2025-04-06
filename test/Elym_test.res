@@ -95,7 +95,7 @@ test("The class attribute API that add, removes, toggles, etc.", () => {
   switch hasClassHello {
   | Some(t) => {
       isTruthy(!t, ~message="The container does not have the class 'hello'.")
-      selection->Elym.addClass("hello")->ignore
+      selection->Elym.addClass(["hello"])->ignore
     }
   | None =>
     isTruthy(
@@ -118,8 +118,22 @@ test("The class attribute API that add, removes, toggles, etc.", () => {
   selection->Elym.toggleClass("visible")->ignore
   let isVisible = selection->Elym.isClassed("visible")
   switch isVisible {
-    | Some(t) => isTruthy(t, ~message="The container has the visible class, it was added using the Elym toogleClass function")
-    | None => isTruthy(false, ~message="The container, visible class was not added using the Elym toogleClass function")
+  | Some(t) => isTruthy(
+      t,
+      ~message="The container has the visible class, it was added using the Elym toogleClass function",
+    )
+  | None =>
+    isTruthy(
+      false,
+      ~message="The container, visible class was not added using the Elym toogleClass function",
+    )
+  }
+
+  selection->Elym.replaceClass("visible", "hidden")->ignore
+  let wasReplaced = selection->Elym.isClassed("hidden")
+  switch wasReplaced {
+    | Some(t) => isTruthy(t, ~message="The container 'visible' class was replaced for the class 'hidden'")
+    | None => isTruthy(false, ~message="The container 'visible' class was not replaced for the class 'hidden'")
   }
 
   container->teardown

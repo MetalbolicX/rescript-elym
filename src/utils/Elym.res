@@ -18,10 +18,13 @@ external querySelector: (Dom.element, string) => option<Dom.element> = "querySel
 external getAttribute: (Dom.element, string) => option<string> = "getAttribute"
 
 @get external classList: Dom.element => Dom.domTokenList = "classList"
-@send external add: (Dom.domTokenList, string) => unit = "add"
-@send external remove: (Dom.domTokenList, string) => unit = "remove"
+@send @variadic
+external add: (Dom.domTokenList, array<string>) => unit = "add"
+@send @variadic
+external remove: (Dom.domTokenList, array<string>) => unit = "remove"
 @send external contains: (Dom.domTokenList, string) => option<bool> = "contains"
 @send external toggle: (Dom.domTokenList, string, option<bool>) => unit = "toggle"
+@send external replace: (Dom.domTokenList, string, string) => unit = "replace"
 
 @get external getTextContent: Dom.element => option<string> = "textContent"
 @set external setTextContent: (Dom.element, string) => unit = "textContent"
@@ -148,7 +151,7 @@ let removeAttr: (selection, string) => selection = (sel, attrName) => {
   sel
 }
 
-let addClass: (selection, string) => selection = (sel, className) => {
+let addClass: (selection, array<string>) => selection = (sel, className) => {
   switch sel {
   | Single(Some(el)) => el->classList->add(className)
   | Single(None) => Console.error("Elym: addClass - Single element is None.")
@@ -157,7 +160,7 @@ let addClass: (selection, string) => selection = (sel, className) => {
   sel
 }
 
-let removeClass: (selection, string) => selection = (sel, className) => {
+let removeClass: (selection, array<string>) => selection = (sel, className) => {
   switch sel {
   | Single(Some(el)) => el->classList->remove(className)
   | Single(None) => Console.error("Elym: removeClass - Single element is None.")
@@ -180,7 +183,11 @@ let isClassed: (selection, string) => option<bool> = (sel, className) => {
   }
 }
 
-let toggleClass: (selection, string, ~isForced: option<bool>=?) => selection = (sel, className, ~isForced=?) => {
+let toggleClass: (selection, string, ~isForced: option<bool>=?) => selection = (
+  sel,
+  className,
+  ~isForced=?,
+) => {
   switch sel {
   | Single(Some(el)) =>
     switch isForced {
@@ -197,5 +204,13 @@ let toggleClass: (selection, string, ~isForced: option<bool>=?) => selection = (
     })
   }
   sel
+}
 
+let replaceClass: (selection, string, string) => selection = (sel, oldClass, newClass) => {
+  switch sel {
+  | Single(Some(el)) => el->classList->replace(oldClass, newClass)
+  | Single(None) => Console.error("Elym: replaceClass - Single element is None")
+  | Multiple(elements) => elements->Array.forEach(el => el->classList->replace(oldClass, newClass))
+  }
+  sel
 }

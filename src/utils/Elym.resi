@@ -18,7 +18,8 @@ let selectChild: (selection, string) => selection
 let selectChildren: (selection, string) => selection
 // let remove: selection => unit
 // let off: (selection, string, unit => unit) => selection
-let addClass: (selection, string) => selection
-let removeClass: (selection, string) => selection
+let addClass: (selection, array<string>) => selection
+let removeClass: (selection, array<string>) => selection
 let isClassed: (selection, string) => option<bool>
 let toggleClass: (selection, string, ~isForced: option<bool>=?) => selection
+let replaceClass: (selection, string, string) => selection
