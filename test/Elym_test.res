@@ -19,6 +19,9 @@ let setup: unit => Dom.element = () => {
   element->setId("100")
   element->setTextContent("Hello Rescript test")
 
+  let textArea = document->createElement("textarea")
+  element->appendChild(textArea)
+
   document->body->appendChild(element)
   element
 }
@@ -86,7 +89,7 @@ test("DOM element exists and check the id, textContent and data-id", () => {
   container->teardown
 })
 
-test("The class attribute API that add, removes, toggles, etc.", () => {
+test("Check the class attribute API that add, removes, toggles, etc.", () => {
   let container = setup()
 
   let selection = Elym.select("div")
@@ -118,7 +121,8 @@ test("The class attribute API that add, removes, toggles, etc.", () => {
   selection->Elym.toggleClass("visible")->ignore
   let isVisible = selection->Elym.isClassed("visible")
   switch isVisible {
-  | Some(t) => isTruthy(
+  | Some(t) =>
+    isTruthy(
       t,
       ~message="The container has the visible class, it was added using the Elym toogleClass function",
     )
@@ -132,8 +136,38 @@ test("The class attribute API that add, removes, toggles, etc.", () => {
   selection->Elym.replaceClass("visible", "hidden")->ignore
   let wasReplaced = selection->Elym.isClassed("hidden")
   switch wasReplaced {
-    | Some(t) => isTruthy(t, ~message="The container 'visible' class was replaced for the class 'hidden'")
-    | None => isTruthy(false, ~message="The container 'visible' class was not replaced for the class 'hidden'")
+  | Some(t) =>
+    isTruthy(t, ~message="The container 'visible' class was replaced for the class 'hidden'")
+  | None =>
+    isTruthy(
+      false,
+      ~message="The container 'visible' class was not replaced for the class 'hidden'",
+    )
+  }
+
+  container->teardown
+})
+
+test("Check the properties of css and special ones of some Html tags", () => {
+  let container = setup()
+
+  let selection = Elym.select("div")
+
+  let color = selection->Elym.getCssProperty("color")
+  switch color {
+  | Some(c) =>
+    c->isTextEqualTo(
+      "",
+      ~message="The container does not have the property of 'color', it is an empty string",
+    )
+  | None => isTruthy(false, ~message="The container property of color is None")
+  }
+
+  let textArea = selection->Elym.selectChild("textarea")
+  switch textArea {
+    | Single(Some(_)) => isTruthy(true, ~message="The container has child of textarea")
+    | Single(None) => isTruthy(false, ~message="The container does not have the child textarea")
+    | Multiple(_) => isTruthy(false, ~message="The Elym selectChild can only get one element at a time")
   }
 
   container->teardown

@@ -2,8 +2,8 @@ type selection =
   | Single(option<Dom.element>)
   | Multiple(array<Dom.element>)
 
+// Selectors
 @val external document: Dom.document = "document"
-
 @send @return(nullable)
 external docQuerySelector: (Dom.document, string) => option<Dom.element> = "querySelector"
 @send @return(nullable)
@@ -13,23 +13,31 @@ external querySelector: (Dom.element, string) => option<Dom.element> = "querySel
 @get external nodeListLength: Dom.nodeList => int = "length"
 @send external item: (Dom.nodeList, int) => Nullable.t<Dom.element> = "item"
 
+// Attributes
 @send external setAttribute: (Dom.element, string, string) => unit = "setAttribute"
 @send @return(nullable)
 external getAttribute: (Dom.element, string) => option<string> = "getAttribute"
+@send external removeAttribute: (Dom.element, string) => unit = "removeAttribute"
 
+// Class getters and setters
 @get external classList: Dom.element => Dom.domTokenList = "classList"
 @send @variadic
 external add: (Dom.domTokenList, array<string>) => unit = "add"
 @send @variadic
 external remove: (Dom.domTokenList, array<string>) => unit = "remove"
-@send external contains: (Dom.domTokenList, string) => option<bool> = "contains"
+@send external contains: (Dom.domTokenList, string) => bool = "contains"
 @send external toggle: (Dom.domTokenList, string, option<bool>) => unit = "toggle"
 @send external replace: (Dom.domTokenList, string, string) => unit = "replace"
 
-@get external getTextContent: Dom.element => option<string> = "textContent"
+// Text
+@get external getTextContent: Dom.element => string = "textContent"
 @set external setTextContent: (Dom.element, string) => unit = "textContent"
 
-@send external removeAttribute: (Dom.element, string) => unit = "removeAttribute"
+// Css properties
+@val external getComputedStyle: Dom.element => Dom.cssStyleDeclaration = "getComputedStyle"
+@send external getPropertyValue: (Dom.cssStyleDeclaration, string) => string = "getPropertyValue"
+
+
 
 let select: string => selection = selector => Single(document->docQuerySelector(selector))
 
@@ -125,7 +133,7 @@ let setText: (selection, string) => selection = (sel, text) => {
 
 let getText: selection => option<string> = sel => {
   switch sel {
-  | Single(Some(el)) => el->getTextContent
+  | Single(Some(el)) => el->getTextContent->Some
   | Single(None) =>
     Console.error("Elym: getText - Single element is None.")
     None
@@ -171,7 +179,7 @@ let removeClass: (selection, array<string>) => selection = (sel, className) => {
 
 let isClassed: (selection, string) => option<bool> = (sel, className) => {
   switch sel {
-  | Single(Some(el)) => el->classList->contains(className)
+  | Single(Some(el)) => el->classList->contains(className)->Some
   | Single(None) => {
       Console.error("Elym: isClassed - Single element is None.")
       None
@@ -213,4 +221,18 @@ let replaceClass: (selection, string, string) => selection = (sel, oldClass, new
   | Multiple(elements) => elements->Array.forEach(el => el->classList->replace(oldClass, newClass))
   }
   sel
+}
+
+let getCssProperty: (selection, string) => option<string> = (sel, property) => {
+  switch sel {
+  | Single(Some(el)) =>
+    let style = getComputedStyle(el)
+    Some(style->getPropertyValue(property))
+  | Single(None) =>
+    Console.error("Elym: getProperty - Single element is None")
+    None
+  | Multiple(_) =>
+    Console.error("Elym: getProperty - getter not supported on multiple elements")
+    None
+  }
 }

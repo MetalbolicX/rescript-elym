@@ -23,3 +23,4 @@ let removeClass: (selection, array<string>) => selection
 let isClassed: (selection, string) => option<bool>
 let toggleClass: (selection, string, ~isForced: option<bool>=?) => selection
 let replaceClass: (selection, string, string) => selection
+let getCssProperty: (selection, string) => option<string>
