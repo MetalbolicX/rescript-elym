@@ -43,6 +43,11 @@ external remove: (Dom.domTokenList, array<string>) => unit = "remove"
 @get external getValue: Dom.element => string = "value"
 @set external setValue: (Dom.element, string) => unit = "value"
 
+// Event listeners
+@send external addEventListener: (Dom.element, string, Dom.event => unit) => unit = "addEventListener"
+// @send
+// external removeEventListener: (Dom.element, string, Dom.eventTarget => unit) => unit = "removeEventListener"
+
 let select: string => selection = selector => Single(docQuerySelector(selector))
 
 let selectAll: string => selection = selector => {
@@ -179,9 +184,9 @@ let hasAttr: (selection, string) => option<bool> = (sel, attrName) => {
 
 let toggleAttr: (selection, string) => selection = (sel, attrName) => {
   switch sel {
-    | Single(Some(el)) => el->toggleAttribute(attrName)
-    | Single(None) => Console.error("Elym: toggleAttr - Single element is None")
-    | Multiple(elements) => elements->Array.forEach(el => el->toggleAttribute(attrName))
+  | Single(Some(el)) => el->toggleAttribute(attrName)
+  | Single(None) => Console.error("Elym: toggleAttr - Single element is None")
+  | Multiple(elements) => elements->Array.forEach(el => el->toggleAttribute(attrName))
   }
   sel
 }
@@ -283,5 +288,14 @@ let getValue: selection => option<string> = sel => {
     Console.error("Elym: getValue - getter not supported on multiple elements.")
     None
   }
+}
+
+let on: (selection, string, Dom.event => unit) => selection = (sel, eventType, callback) => {
+  switch sel {
+  | Single(Some(el)) => el->addEventListener(eventType, callback)
+  | Single(None) => Console.error("Elym: on - Single element is None.")
+  | Multiple(elements) => elements->Array.forEach(el => el->addEventListener(eventType, callback))
+  }
+  sel
 }
 

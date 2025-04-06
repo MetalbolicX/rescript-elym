@@ -27,24 +27,22 @@
 //   })->ignore
 //   task
 // }
+@get external target: Dom.event => Dom.eventTarget_like<Dom.htmlInputElement> = "target"
+@get external getInputValue: Dom.eventTarget_like<Dom.htmlInputElement> => string = "value"
 
-// let formTodoInput = Elym.select("#todo__form-input")
-// let formButtonAddTodo = Elym.select("#todo__form-add-task-button")
-// let todoList = Elym.select("#todo__list")
+let formTodoInput = Elym.select("#todo__form-input")
+let formButtonAddTodo = Elym.select("#todo__form-add-task-button")
+let todoList = Elym.select("#todo__list")
 
-// formTodoInput
-// ->Elym.on("input", _ => {
-//   switch formTodoInput->Elym.getValue {
-//   | Some(text) =>
-//     if String.length(text) > 3 {
-//       formButtonAddTodo->Elym.rmAttr("disabled")->ignore
-//     } else {
-//       formButtonAddTodo->Elym.setAttr("disabled", "")->ignore
-//     }
-//   | None => ()
-//   }
-// })
-// ->ignore
+formTodoInput
+->Elym.on("input", evt => {
+  if evt->target->getInputValue->String.length > 3 {
+    formButtonAddTodo->Elym.removeAttr("disabled")->ignore
+  } else {
+    formButtonAddTodo->Elym.setAttr("disabled", "")->ignore
+  }
+})
+->ignore
 
 // formButtonAddTodo
 // ->Elym.on("click", _ => {
@@ -60,11 +58,3 @@
 //   }
 // })
 // ->ignore
-
-let form = Elym.select("#todo__form")
-form->Elym.setAttr("data-id", "100")->ignore
-let idData = form->Elym.getAttr("data-id")
-switch idData {
-| Some(id) => Console.log2("Form ID:", id)
-| None => Console.error("Form ID not found")
-}
