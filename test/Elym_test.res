@@ -79,11 +79,10 @@ test("DOM element exists and check the id, textContent and data-id", () => {
   }
 
   selection->Elym.removeAttr("data-id")->ignore
-  let rmDataId = selection->Elym.getAttr("data-id")
-  switch rmDataId {
-  | Some(id) =>
-    id->isTextEqualTo("abc", ~message="The container data-id still exists. It was not removed.")
-  | None => isTruthy(true, ~message="The container data-id was successfully removed.")
+  switch selection->Elym.hasAttr("data-id") {
+  | Some(t) =>
+    isTruthy(!t, ~message="The container data-id was successfully removed. Using Elym removeAttr.")
+  | None => isTruthy(false, ~message="The container data-id is not None.")
   }
 
   container->teardown
@@ -165,9 +164,29 @@ test("Check the properties of css and special ones of some Html tags", () => {
 
   let textArea = selection->Elym.selectChild("textarea")
   switch textArea {
-    | Single(Some(_)) => isTruthy(true, ~message="The container has child of textarea")
-    | Single(None) => isTruthy(false, ~message="The container does not have the child textarea")
-    | Multiple(_) => isTruthy(false, ~message="The Elym selectChild can only get one element at a time")
+  | Single(Some(_)) => isTruthy(true, ~message="The container has child of textarea.")
+  | Single(None) => isTruthy(false, ~message="The container does not have the child textarea.")
+  | Multiple(_) =>
+    isTruthy(false, ~message="The Elym selectChild can only get one element at a time.")
+  }
+
+  let text = textArea->Elym.getValue
+  switch text {
+    | Some(txt) => txt->isTextEqualTo("", ~message="The textarea input value is an empty string.")
+    | None => isTruthy(false, ~message="The textarea input value is None")
+  }
+
+  textArea->Elym.setValue("Hello world!")->ignore
+  let newText = textArea->Elym.getValue
+  switch newText {
+    | Some(txt) => txt->isTextEqualTo("Hello world!", ~message="The textarea input value is 'Hello world!'")
+    | None => isTruthy(false, ~message="The textarea input value is None")
+  }
+
+  textArea->Elym.toggleAttr("readonly")->ignore
+  switch textArea->Elym.hasAttr("readonly") {
+    | Some(t) => isTruthy(t, ~message="The textares has the attribute readonly, added using Elym toggleAttr function.")
+    | None => isTruthy(false, ~message="The textarea is None")
   }
 
   container->teardown

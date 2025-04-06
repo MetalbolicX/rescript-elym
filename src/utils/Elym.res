@@ -3,12 +3,12 @@ type selection =
   | Multiple(array<Dom.element>)
 
 // Selectors
-@val external document: Dom.document = "document"
-@send @return(nullable)
-external docQuerySelector: (Dom.document, string) => option<Dom.element> = "querySelector"
+@val @scope("document") @return(nullable)
+external docQuerySelector: string => option<Dom.element> = "querySelector"
 @send @return(nullable)
 external querySelector: (Dom.element, string) => option<Dom.element> = "querySelector"
-@send external docQuerySelectorAll: (Dom.document, string) => Dom.nodeList = "querySelectorAll"
+@val @scope("document")
+external docQuerySelectorAll: string => Dom.nodeList = "querySelectorAll"
 @send external querySelectorAll: (Dom.element, string) => Dom.nodeList = "querySelectorAll"
 @get external nodeListLength: Dom.nodeList => int = "length"
 @send external item: (Dom.nodeList, int) => Nullable.t<Dom.element> = "item"
@@ -18,6 +18,8 @@ external querySelector: (Dom.element, string) => option<Dom.element> = "querySel
 @send @return(nullable)
 external getAttribute: (Dom.element, string) => option<string> = "getAttribute"
 @send external removeAttribute: (Dom.element, string) => unit = "removeAttribute"
+@send external hasAttribute: (Dom.element, string) => bool = "hasAttribute"
+@send external toggleAttribute: (Dom.element, string) => unit = "toggleAttribute"
 
 // Class getters and setters
 @get external classList: Dom.element => Dom.domTokenList = "classList"
@@ -37,11 +39,14 @@ external remove: (Dom.domTokenList, array<string>) => unit = "remove"
 @val external getComputedStyle: Dom.element => Dom.cssStyleDeclaration = "getComputedStyle"
 @send external getPropertyValue: (Dom.cssStyleDeclaration, string) => string = "getPropertyValue"
 
+// Special tag properties
+@get external getValue: Dom.element => string = "value"
+@set external setValue: (Dom.element, string) => unit = "value"
 
-let select: string => selection = selector => Single(document->docQuerySelector(selector))
+let select: string => selection = selector => Single(docQuerySelector(selector))
 
 let selectAll: string => selection = selector => {
-  let nodes = document->docQuerySelectorAll(selector)
+  let nodes = selector->docQuerySelectorAll
   let length = nodeListLength(nodes)
 
   if length == 0 {
@@ -158,6 +163,29 @@ let removeAttr: (selection, string) => selection = (sel, attrName) => {
   sel
 }
 
+let hasAttr: (selection, string) => option<bool> = (sel, attrName) => {
+  switch sel {
+  | Single(Some(el)) => el->hasAttribute(attrName)->Some
+  | Single(None) => {
+      Console.error("Elym: hasAttr - Single element is None.")
+      None
+    }
+  | Multiple(_) => {
+      Console.error("Elym: hasAttr - getter is not supported for multiple elements")
+      None
+    }
+  }
+}
+
+let toggleAttr: (selection, string) => selection = (sel, attrName) => {
+  switch sel {
+    | Single(Some(el)) => el->toggleAttribute(attrName)
+    | Single(None) => Console.error("Elym: toggleAttr - Single element is None")
+    | Multiple(elements) => elements->Array.forEach(el => el->toggleAttribute(attrName))
+  }
+  sel
+}
+
 let addClass: (selection, array<string>) => selection = (sel, className) => {
   switch sel {
   | Single(Some(el)) => el->classList->add(className)
@@ -234,5 +262,26 @@ let getCssProperty: (selection, string) => option<string> = (sel, property) => {
     Console.error("Elym: getProperty - getter not supported on multiple elements")
     None
   }
-
 }
+
+let setValue: (selection, string) => selection = (sel, value) => {
+  switch sel {
+  | Single(Some(el)) => el->setValue(value)
+  | Single(None) => Console.error("Elym: setValue - Single element is None.")
+  | Multiple(elements) => elements->Array.forEach(el => el->setValue(value))
+  }
+  sel
+}
+
+let getValue: selection => option<string> = sel => {
+  switch sel {
+  | Single(Some(el)) => el->getValue->Some
+  | Single(None) =>
+    Console.error("Elym: getValue - Single element is None.")
+    None
+  | Multiple(_elements) =>
+    Console.error("Elym: getValue - getter not supported on multiple elements.")
+    None
+  }
+}
+

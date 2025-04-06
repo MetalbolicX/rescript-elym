@@ -24,3 +24,7 @@ let isClassed: (selection, string) => option<bool>
 let toggleClass: (selection, string, ~isForced: bool=?) => selection
 let replaceClass: (selection, string, string) => selection
 let getCssProperty: (selection, string) => option<string>
+let hasAttr: (selection, string) => option<bool>
+let toggleAttr: (selection, string) => selection
+let getValue: selection => option<string>
+let setValue: (selection, string) => selection
