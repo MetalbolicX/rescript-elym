@@ -26,7 +26,7 @@ external add: (Dom.domTokenList, array<string>) => unit = "add"
 @send @variadic
 external remove: (Dom.domTokenList, array<string>) => unit = "remove"
 @send external contains: (Dom.domTokenList, string) => bool = "contains"
-@send external toggle: (Dom.domTokenList, string, option<bool>) => unit = "toggle"
+@send external toggle: (Dom.domTokenList, string, ~isForced: bool=?) => unit = "toggle"
 @send external replace: (Dom.domTokenList, string, string) => unit = "replace"
 
 // Text
@@ -36,7 +36,6 @@ external remove: (Dom.domTokenList, array<string>) => unit = "remove"
 // Css properties
 @val external getComputedStyle: Dom.element => Dom.cssStyleDeclaration = "getComputedStyle"
 @send external getPropertyValue: (Dom.cssStyleDeclaration, string) => string = "getPropertyValue"
-
 
 
 let select: string => selection = selector => Single(document->docQuerySelector(selector))
@@ -191,7 +190,7 @@ let isClassed: (selection, string) => option<bool> = (sel, className) => {
   }
 }
 
-let toggleClass: (selection, string, ~isForced: option<bool>=?) => selection = (
+let toggleClass: (selection, string, ~isForced: bool=?) => selection = (
   sel,
   className,
   ~isForced=?,
@@ -199,17 +198,17 @@ let toggleClass: (selection, string, ~isForced: option<bool>=?) => selection = (
   switch sel {
   | Single(Some(el)) =>
     switch isForced {
-    | Some(force) => el->classList->toggle(className, force)
-    | None => el->classList->toggle(className, None)
+    | Some(force) => el->classList->toggle(className, ~isForced=force)
+    | None => el->classList->toggle(className)
     }
   | Single(None) => Console.error("Elym: toggleClass - Single element is None.")
   | Multiple(elements) =>
-    elements->Array.forEach(el => {
+    elements->Array.forEach(el =>
       switch isForced {
-      | Some(force) => el->classList->toggle(className, force)
-      | None => el->classList->toggle(className, None)
+      | Some(force) => el->classList->toggle(className, ~isForced=force)
+      | None => el->classList->toggle(className)
       }
-    })
+    )
   }
   sel
 }
@@ -235,4 +234,5 @@ let getCssProperty: (selection, string) => option<string> = (sel, property) => {
     Console.error("Elym: getProperty - getter not supported on multiple elements")
     None
   }
+
 }

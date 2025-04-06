@@ -21,6 +21,6 @@ let selectChildren: (selection, string) => selection
 let addClass: (selection, array<string>) => selection
 let removeClass: (selection, array<string>) => selection
 let isClassed: (selection, string) => option<bool>
-let toggleClass: (selection, string, ~isForced: option<bool>=?) => selection
+let toggleClass: (selection, string, ~isForced: bool=?) => selection
 let replaceClass: (selection, string, string) => selection
 let getCssProperty: (selection, string) => option<string>
