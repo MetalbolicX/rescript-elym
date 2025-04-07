@@ -44,9 +44,11 @@ external remove: (Dom.domTokenList, array<string>) => unit = "remove"
 @set external setValue: (Dom.element, string) => unit = "value"
 
 // Event listeners
-@send external addEventListener: (Dom.element, string, Dom.event => unit) => unit = "addEventListener"
-// @send
-// external removeEventListener: (Dom.element, string, Dom.eventTarget => unit) => unit = "removeEventListener"
+@send
+external addEventListener: (Dom.element, string, Dom.event => unit) => unit = "addEventListener"
+@send
+external removeEventListener: (Dom.element, string, Dom.event => unit) => unit =
+  "removeEventListener"
 
 let select: string => selection = selector => Single(docQuerySelector(selector))
 
@@ -299,3 +301,12 @@ let on: (selection, string, Dom.event => unit) => selection = (sel, eventType, c
   sel
 }
 
+let off: (selection, string, Dom.event => unit) => selection = (sel, eventType, callback) => {
+  switch sel {
+  | Single(Some(el)) => el->removeEventListener(eventType, callback)
+  | Single(None) => Console.error("Elym: off - Single element is None.")
+  | Multiple(elements) =>
+    elements->Array.forEach(el => el->removeEventListener(eventType, callback))
+  }
+  sel
+}
