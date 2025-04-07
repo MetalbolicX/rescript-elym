@@ -55,7 +55,9 @@ external remove: (Dom.domTokenList, array<string>) => unit = "remove"
 // Event listeners
 @send
 external addEventListener: (Dom.element, string, Dom.event => unit) => unit = "addEventListener"
-@send external removeEventListener: (Dom.element, string, Dom.event => unit) => unit = "removeEventListener"
+@send
+external removeEventListener: (Dom.element, string, Dom.event => unit) => unit =
+  "removeEventListener"
 
 let select: string => selection = selector => Single(docQuerySelector(selector))
 
@@ -326,19 +328,16 @@ let on: (selection, string, Dom.event => unit) => selection = (sel, eventType, c
   sel
 }
 
-let off: (selection, string, Dom.event => unit) => selection = (sel, eventType, callback) => {
+let off: (selection, string) => selection = (sel, eventType) => {
   let removeListener = el => {
     switch WeakMap.get(listeners, el) {
     | Some(dict) =>
       switch Dict.get(dict, eventType) {
       | Some(arr) => {
-          let newArr = arr->Array.filter(((_, cb)) => cb !== callback)
-          if Array.length(newArr) == 0 {
-            Dict.delete(dict, eventType)
-          } else {
-            Dict.set(dict, eventType, newArr)
-          }
-          el->removeEventListener(eventType, callback)
+          arr->Array.forEach(((_, cb)) => {
+            el->removeEventListener(eventType, cb)
+          })
+          Dict.delete(dict, eventType)
         }
       | None => ()
       }

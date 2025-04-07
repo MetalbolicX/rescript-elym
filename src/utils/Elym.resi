@@ -29,4 +29,4 @@ let toggleAttr: (selection, string) => selection
 let getValue: selection => option<string>
 let setValue: (selection, string) => selection
 let on: (selection, string, Dom.event => unit) => selection
-let off: (selection, string, Dom.event => unit) => selection
+let off: (selection, string) => selection
