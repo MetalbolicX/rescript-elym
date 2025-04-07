@@ -2,6 +2,15 @@ type selection =
   | Single(option<Dom.element>)
   | Multiple(array<Dom.element>)
 
+type listenerMap = WeakMap.t<Dom.element, Dict.t<array<(int, Dom.event => unit)>>>
+
+let listeners: listenerMap = WeakMap.make()
+
+let nextListenerId = ref(0)
+let getNextListenerId = () => {
+  nextListenerId := nextListenerId.contents + 1
+  nextListenerId.contents
+}
 // Selectors
 @val @scope("document") @return(nullable)
 external docQuerySelector: string => option<Dom.element> = "querySelector"
@@ -46,9 +55,7 @@ external remove: (Dom.domTokenList, array<string>) => unit = "remove"
 // Event listeners
 @send
 external addEventListener: (Dom.element, string, Dom.event => unit) => unit = "addEventListener"
-@send
-external removeEventListener: (Dom.element, string, Dom.event => unit) => unit =
-  "removeEventListener"
+@send external removeEventListener: (Dom.element, string, Dom.event => unit) => unit = "removeEventListener"
 
 let select: string => selection = selector => Single(docQuerySelector(selector))
 
@@ -293,20 +300,55 @@ let getValue: selection => option<string> = sel => {
 }
 
 let on: (selection, string, Dom.event => unit) => selection = (sel, eventType, callback) => {
+  let addListener = el => {
+    let id = getNextListenerId()
+    let listenersForElement = switch WeakMap.get(listeners, el) {
+    | Some(dict) => dict
+    | None => {
+        let newDict = Dict.make()
+        WeakMap.set(listeners, el, newDict)->ignore
+        newDict
+      }
+    }
+    let listenersForEvent = switch Dict.get(listenersForElement, eventType) {
+    | Some(arr) => arr
+    | None => []
+    }
+    Dict.set(listenersForElement, eventType, [(id, callback), ...listenersForEvent])
+    el->addEventListener(eventType, callback)
+  }
+
   switch sel {
-  | Single(Some(el)) => el->addEventListener(eventType, callback)
+  | Single(Some(el)) => addListener(el)
   | Single(None) => Console.error("Elym: on - Single element is None.")
-  | Multiple(elements) => elements->Array.forEach(el => el->addEventListener(eventType, callback))
+  | Multiple(elements) => elements->Array.forEach(addListener)
   }
   sel
 }
 
 let off: (selection, string, Dom.event => unit) => selection = (sel, eventType, callback) => {
+  let removeListener = el => {
+    switch WeakMap.get(listeners, el) {
+    | Some(dict) =>
+      switch Dict.get(dict, eventType) {
+      | Some(arr) => {
+          let newArr = arr->Array.filter(((_, cb)) => cb !== callback)
+          if Array.length(newArr) == 0 {
+            Dict.delete(dict, eventType)
+          } else {
+            Dict.set(dict, eventType, newArr)
+          }
+          el->removeEventListener(eventType, callback)
+        }
+      | None => ()
+      }
+    | None => ()
+    }
+  }
   switch sel {
-  | Single(Some(el)) => el->removeEventListener(eventType, callback)
+  | Single(Some(el)) => removeListener(el)
   | Single(None) => Console.error("Elym: off - Single element is None.")
-  | Multiple(elements) =>
-    elements->Array.forEach(el => el->removeEventListener(eventType, callback))
+  | Multiple(elements) => elements->Array.forEach(removeListener)
   }
   sel
 }
