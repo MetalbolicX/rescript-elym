@@ -13,7 +13,7 @@ let setText: (selection, string) => selection
 let getText: selection => option<string>
 let selectChild: (selection, string) => selection
 let selectChildren: (selection, string) => selection
-// let remove: selection => unitunit) => selection
+let remove: selection => unit
 let addClass: (selection, array<string>) => selection
 let removeClass: (selection, array<string>) => selection
 let isClassed: (selection, string) => option<bool>

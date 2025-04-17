@@ -34,15 +34,15 @@ let formTodoInput = Elym.select("#todo__form-input")
 let formButtonAddTodo = Elym.select("#todo__form-add-task-button")
 let todoList = Elym.select("#todo__list")
 
-formTodoInput
-->Elym.on("input", evt => {
-  if evt->target->getInputValue->String.length > 3 {
-    formButtonAddTodo->Elym.removeAttr("disabled")->ignore
-  } else {
-    formButtonAddTodo->Elym.setAttr("disabled", "")->ignore
-  }
-})
-->ignore
+// formTodoInput
+// ->Elym.on("input", evt => {
+//   if evt->target->getInputValue->String.length > 3 {
+//     formButtonAddTodo->Elym.removeAttr("disabled")->ignore
+//   } else {
+//     formButtonAddTodo->Elym.setAttr("disabled", "")->ignore
+//   }
+// })
+// ->ignore
 
 // formButtonAddTodo
 // ->Elym.on("click", _ => {

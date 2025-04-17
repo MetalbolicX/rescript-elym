@@ -35,7 +35,7 @@ external getAttribute: (Dom.element, string) => option<string> = "getAttribute"
 @send @variadic
 external add: (Dom.domTokenList, array<string>) => unit = "add"
 @send @variadic
-external remove: (Dom.domTokenList, array<string>) => unit = "remove"
+external removeToken: (Dom.domTokenList, array<string>) => unit = "remove"
 @send external contains: (Dom.domTokenList, string) => bool = "contains"
 @send external toggle: (Dom.domTokenList, string, ~isForced: bool=?) => unit = "toggle"
 @send external replace: (Dom.domTokenList, string, string) => unit = "replace"
@@ -58,6 +58,8 @@ external addEventListener: (Dom.element, string, Dom.event => unit) => unit = "a
 @send
 external removeEventListener: (Dom.element, string, Dom.event => unit) => unit =
   "removeEventListener"
+
+@send external removeElement: Dom.element => unit = "remove"
 
 let select: string => selection = selector => Single(docQuerySelector(selector))
 
@@ -213,9 +215,9 @@ let addClass: (selection, array<string>) => selection = (sel, className) => {
 
 let removeClass: (selection, array<string>) => selection = (sel, className) => {
   switch sel {
-  | Single(Some(el)) => el->classList->remove(className)
+  | Single(Some(el)) => el->classList->removeToken(className)
   | Single(None) => Console.error("Elym: removeClass - Single element is None.")
-  | Multiple(elements) => elements->Array.forEach(el => el->classList->remove(className))
+  | Multiple(elements) => elements->Array.forEach(el => el->classList->removeToken(className))
   }
   sel
 }
@@ -350,4 +352,26 @@ let off: (selection, string) => selection = (sel, eventType) => {
   | Multiple(elements) => elements->Array.forEach(removeListener)
   }
   sel
+}
+
+let remove: selection => unit = sel => {
+  let removeSingleElement = el => {
+    // Remove all event listeners
+    switch WeakMap.get(listeners, el) {
+    | Some(dict) =>
+      dict->Dict.keysToArray->Array.forEach(eventType => {
+        off(Single(Some(el)), eventType)->ignore
+      })
+    | None => ()
+    }
+
+    // Remove the element from the DOM
+    el->removeElement
+  }
+
+  switch sel {
+  | Single(Some(el)) => removeSingleElement(el)
+  | Single(None) => Console.error("Elym: remove - Single element is None.")
+  | Multiple(elements) => elements->Array.forEach(removeSingleElement)
+  }
 }
