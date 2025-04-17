@@ -219,92 +219,56 @@ let attr: (selection, string, ~value: string=?) => (selection, option<string>) =
 //   }
 //   (sel, result)
 // }
-
-// let removeAttr: (selection, string) => selection = (sel, attrName) => {
-//   switch sel {
-//   | Single(Some(el)) => el->removeAttribute(attrName)
-//   | Single(None) => Console.error("Elym: removeAttribute - Single element is None.")
-//   | Multiple(elements) => elements->Array.forEach(el => el->removeAttribute(attrName))
-//   }
-//   sel
-// }
-
-let hasAttr: (selection, string) => option<bool> = (sel, attrName) => {
-  switch sel {
-  | Single(Some(el)) => el->hasAttribute(attrName)->Some
-  | Single(None) => {
-      Console.error("Elym: hasAttr - Single element is None.")
-      None
-    }
-  | Multiple(_) => {
-      Console.error("Elym: hasAttr - getter is not supported for multiple elements")
-      None
-    }
+let attributed: (selection, string, ~exists: bool=?) => (selection, option<bool>) = (sel, attrName, ~exists=?) => {
+  let result = switch (sel, exists) {
+  | (Single(Some(el)), Some(true)) =>
+    el->setAttribute(attrName, "")
+    None
+  | (Single(Some(el)), Some(false)) =>
+    el->removeAttribute(attrName)
+    None
+  | (Single(Some(el)), None) =>
+    Some(el->hasAttribute(attrName))
+  | (Single(None), _) =>
+    Console.error("Elym: attributed - Single element is None.")
+    None
+  | (Multiple(elements), Some(true)) =>
+    elements->Array.forEach(el => el->setAttribute(attrName, ""))
+    None
+  | (Multiple(elements), Some(false)) =>
+    elements->Array.forEach(el => el->removeAttribute(attrName))
+    None
+  | (Multiple(_), None) =>
+    Console.error("Elym: attributed - getter not supported on multiple elements.")
+    None
   }
+  (sel, result)
 }
 
-let toggleAttr: (selection, string) => selection = (sel, attrName) => {
-  switch sel {
-  | Single(Some(el)) => el->toggleAttribute(attrName)
-  | Single(None) => Console.error("Elym: toggleAttr - Single element is None")
-  | Multiple(elements) => elements->Array.forEach(el => el->toggleAttribute(attrName))
+let classed: (selection, string, ~exists: bool=?) => (selection, option<bool>) = (sel, className, ~exists=?) => {
+  let result = switch (sel, exists) {
+  | (Single(Some(el)), Some(true)) =>
+    el->classList->add([className])
+    None
+  | (Single(Some(el)), Some(false)) =>
+    el->classList->removeToken([className])
+    None
+  | (Single(Some(el)), None) =>
+    Some(el->classList->contains(className))
+  | (Single(None), _) =>
+    Console.error("Elym: classed - Single element is None.")
+    None
+  | (Multiple(elements), Some(true)) =>
+    elements->Array.forEach(el => el->classList->add([className]))
+    None
+  | (Multiple(elements), Some(false)) =>
+    elements->Array.forEach(el => el->classList->removeToken([className]))
+    None
+  | (Multiple(_), None) =>
+    Console.error("Elym: classed - getter not supported on multiple elements.")
+    None
   }
-  sel
-}
-
-let addClass: (selection, array<string>) => selection = (sel, className) => {
-  switch sel {
-  | Single(Some(el)) => el->classList->add(className)
-  | Single(None) => Console.error("Elym: addClass - Single element is None.")
-  | Multiple(elements) => elements->Array.forEach(el => el->classList->add(className))
-  }
-  sel
-}
-
-let removeClass: (selection, array<string>) => selection = (sel, className) => {
-  switch sel {
-  | Single(Some(el)) => el->classList->removeToken(className)
-  | Single(None) => Console.error("Elym: removeClass - Single element is None.")
-  | Multiple(elements) => elements->Array.forEach(el => el->classList->removeToken(className))
-  }
-  sel
-}
-
-let isClassed: (selection, string) => option<bool> = (sel, className) => {
-  switch sel {
-  | Single(Some(el)) => el->classList->contains(className)->Some
-  | Single(None) => {
-      Console.error("Elym: isClassed - Single element is None.")
-      None
-    }
-  | Multiple(_) => {
-      Console.error("Elym: isClassed - Multiple elements is None")
-      None
-    }
-  }
-}
-
-let toggleClass: (selection, string, ~isForced: bool=?) => selection = (
-  sel,
-  className,
-  ~isForced=?,
-) => {
-  switch sel {
-  | Single(Some(el)) =>
-    switch isForced {
-    | Some(force) => el->classList->toggle(className, ~isForced=force)
-    | None => el->classList->toggle(className)
-    }
-  | Single(None) => Console.error("Elym: toggleClass - Single element is None.")
-  | Multiple(elements) =>
-    elements->Array.forEach(el =>
-      switch isForced {
-      | Some(force) => el->classList->toggle(className, ~isForced=force)
-      | None => el->classList->toggle(className)
-      }
-    )
-  }
-  sel
+  (sel, result)
 }
 
 let replaceClass: (selection, string, string) => selection = (sel, oldClass, newClass) => {

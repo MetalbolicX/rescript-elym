@@ -77,12 +77,12 @@ test("DOM element exists and check the id, textContent and data-id", () => {
     )
   }
 
-  // selection->Elym.removeAttr("data-id")->ignore
-  // switch selection->Elym.hasAttr("data-id") {
-  // | Some(t) =>
-  //   isTruthy(!t, ~message="The container data-id was successfully removed. Using Elym removeAttr.")
-  // | None => isTruthy(false, ~message="The container data-id is not None.")
-  // }
+  let (withoutDataId, _) = withDataId->Elym.attributed("data-id", ~exists=false)
+  switch withoutDataId->Elym.attributed("data-id") {
+  | (_, Some(true)) => isTruthy(false, ~message="The data-id is still in the container and it was removed correctly.")
+  | (_, Some(false)) => isTruthy(true, ~message="The data-id was correctly removed.")
+  | _ => isTruthy(false, ~message="The was a problem to test the Elym attributed function.")
+  }
 
   container->teardown
 })
