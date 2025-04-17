@@ -123,63 +123,111 @@ let selectChildren: (selection, string) => selection = (sel, selector) => {
   }
 }
 
-let setAttr: (selection, string, string) => selection = (sel, attrName, value) => {
-  switch sel {
-  | Single(Some(el)) => setAttribute(el, attrName, value)
-  | Single(None) => Console.error("Elym: setAttr - Single element is None.")
-  | Multiple(elements) => elements->Array.forEach(el => setAttribute(el, attrName, value))
+let text: (selection, ~content: string=?) => (selection, option<string>) = (sel, ~content=?) => {
+  let result = switch (sel, content) {
+  | (Single(Some(el)), Some(text)) =>
+    el->setTextContent(text)
+    None
+  | (Single(Some(el)), None) =>
+    Some(el->getTextContent)
+  | (Single(None), _) =>
+    Console.error("Elym: text - Single element is None.")
+    None
+  | (Multiple(elements), Some(text)) =>
+    elements->Array.forEach(el => el->setTextContent(text))
+    None
+  | (Multiple(_), None) =>
+    Console.error("Elym: text - getter not supported on multiple elements.")
+    None
   }
-  sel
+  (sel, result)
 }
 
-let getAttr: (selection, string) => option<string> = (sel, attrName) => {
-  switch sel {
-  | Single(Some(el)) => el->getAttribute(attrName)
-  | Single(None) =>
-    Console.error("Elym: getAttr - Single element is None.")
+let value: (selection, ~newValue: string=?) => (selection, option<string>) = (sel, ~newValue=?) => {
+  let result = switch (sel, newValue) {
+  | (Single(Some(el)), Some(value)) =>
+    el->setValue(value)
     None
-  | Multiple(_) => {
-      Console.error("Elym: getAttr - getter not supported on multiple elements.")
-      None
-    }
+  | (Single(Some(el)), None) =>
+    Some(el->getValue)
+  | (Single(None), _) =>
+    Console.error("Elym: value - Single element is None.")
+    None
+  | (Multiple(elements), Some(value)) =>
+    elements->Array.forEach(el => el->setValue(value))
+    None
+  | (Multiple(_), None) =>
+    Console.error("Elym: value - getter not supported on multiple elements.")
+    None
   }
-}
-let setText: (selection, string) => selection = (sel, text) => {
-  switch sel {
-  | Single(Some(el)) => el->setTextContent(text)
-  | Single(None) => Console.error("Elym: setText - Single element is None.")
-  | Multiple(elements) => elements->Array.forEach(el => el->setTextContent(text))
-  }
-  sel
+  (sel, result)
 }
 
-let getText: selection => option<string> = sel => {
-  switch sel {
-  | Single(Some(el)) => el->getTextContent->Some
-  | Single(None) =>
-    Console.error("Elym: getText - Single element is None.")
+let attr: (selection, string, ~value: string=?) => (selection, option<string>) = (sel, attrName, ~value=?) => {
+  let result = switch (sel, value) {
+  | (Single(Some(el)), Some(v)) =>
+    setAttribute(el, attrName, v)
     None
-  | Multiple(_) =>
-    Console.error("Elym: getText - getter not supported on multiple elements.")
+  | (Single(Some(el)), None) =>el->getAttribute(attrName)
+  | (Single(None), _) =>
+    Console.error("Elym: attr - Single element is None.")
+    None
+  | (Multiple(elements), Some(v)) =>
+    elements->Array.forEach(el => setAttribute(el, attrName, v))
+    None
+  | (Multiple(_), None) =>
+    Console.error("Elym: attr - getter not supported on multiple elements.")
     None
   }
+  (sel, result)
 }
-// let createFromTemplate: string => selection = template => {
-//   let parser = new Dom.DOMParser()
-//   let doc = parser->parseFromString(template, "text/html")
-//   let body = doc->querySelector("body")
-//   let element = body->querySelector("*")
-//   Single(Some(element))
+
+// let style: (selection, string, ~value: option<string>=?) => (selection, option<string>) = (sel, property, ~value=?) => {
+//   let setStyle = (el, prop, val) => {
+//     el->Js.Dom.setStyle(prop, val)
+//   }
+
+//   let getStyle = (el, prop) => {
+//     el->Js.Dom.getStyle(prop)
+//   }
+
+//   let removeStyle = (el, prop) => {
+//     el->Js.Dom.setStyle(prop, "")
+//   }
+
+//   let result = switch (sel, value) {
+//   | (Single(Some(el)), Some(v)) =>
+//     setStyle(el, property, v)
+//     None
+//   | (Single(Some(el)), None) when value === Some(None) =>
+//     removeStyle(el, property)
+//     None
+//   | (Single(Some(el)), None) =>
+//     Some(getStyle(el, property))
+//   | (Single(None), _) =>
+//     Console.error("Elym: style - Single element is None.")
+//     None
+//   | (Multiple(elements), Some(v)) =>
+//     elements->Array.forEach(el => setStyle(el, property, v))
+//     None
+//   | (Multiple(elements), None) when value === Some(None) =>
+//     elements->Array.forEach(el => removeStyle(el, property))
+//     None
+//   | (Multiple(_), None) =>
+//     Console.error("Elym: style - getter not supported on multiple elements.")
+//     None
+//   }
+//   (sel, result)
 // }
 
-let removeAttr: (selection, string) => selection = (sel, attrName) => {
-  switch sel {
-  | Single(Some(el)) => el->removeAttribute(attrName)
-  | Single(None) => Console.error("Elym: removeAttribute - Single element is None.")
-  | Multiple(elements) => elements->Array.forEach(el => el->removeAttribute(attrName))
-  }
-  sel
-}
+// let removeAttr: (selection, string) => selection = (sel, attrName) => {
+//   switch sel {
+//   | Single(Some(el)) => el->removeAttribute(attrName)
+//   | Single(None) => Console.error("Elym: removeAttribute - Single element is None.")
+//   | Multiple(elements) => elements->Array.forEach(el => el->removeAttribute(attrName))
+//   }
+//   sel
+// }
 
 let hasAttr: (selection, string) => option<bool> = (sel, attrName) => {
   switch sel {
@@ -268,40 +316,40 @@ let replaceClass: (selection, string, string) => selection = (sel, oldClass, new
   sel
 }
 
-let getCssProperty: (selection, string) => option<string> = (sel, property) => {
-  switch sel {
-  | Single(Some(el)) =>
-    let style = getComputedStyle(el)
-    Some(style->getPropertyValue(property))
-  | Single(None) =>
-    Console.error("Elym: getProperty - Single element is None")
-    None
-  | Multiple(_) =>
-    Console.error("Elym: getProperty - getter not supported on multiple elements")
-    None
-  }
-}
+// let getCssProperty: (selection, string) => option<string> = (sel, property) => {
+//   switch sel {
+//   | Single(Some(el)) =>
+//     let style = getComputedStyle(el)
+//     Some(style->getPropertyValue(property))
+//   | Single(None) =>
+//     Console.error("Elym: getProperty - Single element is None")
+//     None
+//   | Multiple(_) =>
+//     Console.error("Elym: getProperty - getter not supported on multiple elements")
+//     None
+//   }
+// }
 
-let setValue: (selection, string) => selection = (sel, value) => {
-  switch sel {
-  | Single(Some(el)) => el->setValue(value)
-  | Single(None) => Console.error("Elym: setValue - Single element is None.")
-  | Multiple(elements) => elements->Array.forEach(el => el->setValue(value))
-  }
-  sel
-}
+// let setValue: (selection, string) => selection = (sel, value) => {
+//   switch sel {
+//   | Single(Some(el)) => el->setValue(value)
+//   | Single(None) => Console.error("Elym: setValue - Single element is None.")
+//   | Multiple(elements) => elements->Array.forEach(el => el->setValue(value))
+//   }
+//   sel
+// }
 
-let getValue: selection => option<string> = sel => {
-  switch sel {
-  | Single(Some(el)) => el->getValue->Some
-  | Single(None) =>
-    Console.error("Elym: getValue - Single element is None.")
-    None
-  | Multiple(_elements) =>
-    Console.error("Elym: getValue - getter not supported on multiple elements.")
-    None
-  }
-}
+// let getValue: selection => option<string> = sel => {
+//   switch sel {
+//   | Single(Some(el)) => el->getValue->Some
+//   | Single(None) =>
+//     Console.error("Elym: getValue - Single element is None.")
+//     None
+//   | Multiple(_elements) =>
+//     Console.error("Elym: getValue - getter not supported on multiple elements.")
+//     None
+//   }
+// }
 
 let on: (selection, string, Dom.event => unit) => selection = (sel, eventType, callback) => {
   let addListener = el => {
