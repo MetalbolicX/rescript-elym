@@ -52,10 +52,6 @@ external removeToken: (Dom.domTokenList, array<string>) => unit = "remove"
 @val external getComputedStyle: Dom.element => Dom.cssStyleDeclaration = "getComputedStyle"
 @send external getPropertyValue: (Dom.cssStyleDeclaration, string) => string = "getPropertyValue"
 
-// Special tag properties
-@get external getValue: Dom.element => string = "value"
-@set external setValue: (Dom.element, string) => unit = "value"
-
 // Event listeners
 @send
 external addEventListener: (Dom.element, string, Dom.event => unit) => unit = "addEventListener"
@@ -157,26 +153,6 @@ let text: (selection, ~content: string=?) => (selection, option<string>) = (sel,
     None
   | (Multiple(_), None) =>
     Console.error("Elym: text - getter not supported on multiple elements.")
-    None
-  }
-  (sel, result)
-}
-
-let value: (selection, ~newValue: string=?) => (selection, option<string>) = (sel, ~newValue=?) => {
-  let result = switch (sel, newValue) {
-  | (Single(Some(el)), Some(value)) =>
-    el->setValue(value)
-    None
-  | (Single(Some(el)), None) =>
-    Some(el->getValue)
-  | (Single(None), _) =>
-    Console.error("Elym: value - Single element is None.")
-    None
-  | (Multiple(elements), Some(value)) =>
-    elements->Array.forEach(el => el->setValue(value))
-    None
-  | (Multiple(_), None) =>
-    Console.error("Elym: value - getter not supported on multiple elements.")
     None
   }
   (sel, result)
