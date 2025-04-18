@@ -32,7 +32,6 @@ external docQuerySelectorAll: string => Dom.nodeList = "querySelectorAll"
 external getAttribute: (Dom.element, string) => option<string> = "getAttribute"
 @send external removeAttribute: (Dom.element, string) => unit = "removeAttribute"
 @send external hasAttribute: (Dom.element, string) => bool = "hasAttribute"
-@send external toggleAttribute: (Dom.element, string) => unit = "toggleAttribute"
 
 // Class getters and setters
 @get external classList: Dom.element => Dom.domTokenList = "classList"
@@ -41,7 +40,6 @@ external add: (Dom.domTokenList, array<string>) => unit = "add"
 @send @variadic
 external removeToken: (Dom.domTokenList, array<string>) => unit = "remove"
 @send external contains: (Dom.domTokenList, string) => bool = "contains"
-@send external toggle: (Dom.domTokenList, string, ~isForced: bool=?) => unit = "toggle"
 @send external replace: (Dom.domTokenList, string, string) => unit = "replace"
 
 // Text
@@ -258,7 +256,6 @@ let property: (selection, string, ~value: propertyValue=?) => (selection, option
     }
   }
 
-  // let setValue = (el: Dom.element, v: propertyValue) => {
   let setValue: (Dom.element, propertyValue) => Dict.t<'a> = (el, v) => {
     let value = switch v {
     | String(s) => Obj.magic(s)
@@ -310,6 +307,48 @@ let style: (selection, string, ~value: string=?) => (selection, option<string>) 
     None
   | (Multiple(_), None) =>
     Console.error("Elym: style - getter not supported on multiple elements.")
+    None
+  }
+  (sel, result)
+}
+
+let styled: (selection, string, ~exists: bool=?) => (selection, option<bool>) = (sel, styleName, ~exists=?) => {
+  let checkStyle: Dom.element => bool = el => {
+    let computedStyle = getComputedStyle(el)
+    let value = computedStyle->getPropertyValue(styleName)
+    value != "" && value != "none" && value != "initial" && value != "inherit"
+  }
+
+  let setStyle: (Dom.element, bool) => unit = (el, shouldExist) => {
+    let style = el->getStyle
+    if shouldExist {
+      // If the style should exist and it doesn't, set it to a default value
+      if !checkStyle(el) {
+        style->setProperty(styleName, "initial")
+      }
+    } else {
+      // If the style shouldn't exist, remove it
+      style->removeProperty(styleName)
+    }
+  }
+
+  let result = switch (sel, exists) {
+  | (Single(Some(el)), Some(true)) =>
+    setStyle(el, true)
+    None
+  | (Single(Some(el)), Some(false)) =>
+    setStyle(el, false)
+    None
+  | (Single(Some(el)), None) =>
+    Some(checkStyle(el))
+  | (Single(None), _) =>
+    Console.error("Elym: styled - Single element is None.")
+    None
+  | (Multiple(elements), Some(shouldExist)) =>
+    elements->Array.forEach(el => setStyle(el, shouldExist))
+    None
+  | (Multiple(_), None) =>
+    Console.error("Elym: styled - getter not supported on multiple elements.")
     None
   }
   (sel, result)

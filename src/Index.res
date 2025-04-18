@@ -43,7 +43,6 @@ formTodoInput
   }
 })
 ->ignore
-formTodoInput->Elym.style("color", ~value="yellow")->ignore
 
 formButtonAddTodo
 ->Elym.on("click", _ => {
