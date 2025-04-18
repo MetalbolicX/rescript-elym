@@ -2,7 +2,12 @@ type selection =
   | Single(option<Dom.element>)
   | Multiple(array<Dom.element>)
 
-let select: string => selection
+type selector =
+  | Selector(string)
+  | Dom(Dom.element)
+
+// let select: string => selection
+let select: selector => selection
 let selectAll: string => selection
 // let createFromTemplate: string => selection
 // let appendChild: (selection, Dom.element) => selection

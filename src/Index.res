@@ -30,9 +30,9 @@
 @get external target: Dom.event => Dom.eventTarget_like<Dom.htmlInputElement> = "target"
 @get external getInputValue: Dom.eventTarget_like<Dom.htmlInputElement> => string = "value"
 
-let formTodoInput = Elym.select("#todo__form-input")
-let formButtonAddTodo = Elym.select("#todo__form-add-task-button")
-let todoList = Elym.select("#todo__list")
+let formTodoInput = Elym.select(Selector("#todo__form-input"))
+let formButtonAddTodo = Elym.select(Selector("#todo__form-add-task-button"))
+let todoList = Elym.select(Selector("#todo__list"))
 
 // formTodoInput
 // ->Elym.on("input", evt => {

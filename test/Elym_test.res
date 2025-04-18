@@ -31,7 +31,7 @@ let teardown: Dom.element => unit = element => element->remove
 test("DOM element exists and check the id, textContent and data-id", () => {
   let container = setup()
 
-  let selection = Elym.select("div")
+  let selection = Elym.select(Selector("div"))
   switch selection {
   | Single(Some(_)) => isTruthy(true, ~message="The container element exists in the DOM.")
   | Single(None) => isTruthy(false, ~message="The container element does not exist in the DOM.")

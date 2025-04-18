@@ -4,6 +4,10 @@ type selection =
 
 type listenerMap = WeakMap.t<Dom.element, Dict.t<array<(int, Dom.event => unit)>>>
 
+type selector =
+  | Selector(string)
+  | Dom(Dom.element)
+
 let listeners: listenerMap = WeakMap.make()
 
 let nextListenerId = ref(0)
@@ -61,7 +65,13 @@ external removeEventListener: (Dom.element, string, Dom.event => unit) => unit =
 
 @send external removeElement: Dom.element => unit = "remove"
 
-let select: string => selection = selector => Single(docQuerySelector(selector))
+// let select: string => selection = selector => Single(docQuerySelector(selector))
+let select: selector => selection = selector => {
+  switch selector {
+    | Selector(str) => Single(str->docQuerySelector)
+    | Dom(el) => Single(Some(el))
+  }
+}
 
 let selectAll: string => selection = selector => {
   let nodes = selector->docQuerySelectorAll
