@@ -51,6 +51,9 @@ external removeToken: (Dom.domTokenList, array<string>) => unit = "remove"
 // Css properties
 @val external getComputedStyle: Dom.element => Dom.cssStyleDeclaration = "getComputedStyle"
 @send external getPropertyValue: (Dom.cssStyleDeclaration, string) => string = "getPropertyValue"
+@get external getStyle: Dom.element => Dom.cssStyleDeclaration = "style"
+@send external setProperty: (Dom.cssStyleDeclaration, string, string) => unit = "setProperty"
+@send external removeProperty: (Dom.cssStyleDeclaration, string) => unit = "removeProperty"
 
 // Event listeners
 @send
@@ -279,7 +282,7 @@ let property: (selection, string, ~value: propertyValue=?) => (selection, option
   let getValue = (el: Dom.element) => {
     let rawValue = el->Obj.magic->Dict.get(propName)->Option.getExn
     switch Type.typeof(rawValue) {
-    | #string => rawValue->Obj.magic->String->Dome
+    | #string => rawValue->Obj.magic->String->Some
     // | "number" =>
     //   if Float.isInt(Obj.magic(rawValue)) {
     //     Some(Int(Obj.magic(rawValue)))
@@ -320,40 +323,41 @@ let property: (selection, string, ~value: propertyValue=?) => (selection, option
   (sel, result)
 }
 
-// let getCssProperty: (selection, string) => option<string> = (sel, property) => {
-//   switch sel {
-//   | Single(Some(el)) =>
-//     let style = getComputedStyle(el)
-//     Some(style->getPropertyValue(property))
-//   | Single(None) =>
-//     Console.error("Elym: getProperty - Single element is None")
-//     None
-//   | Multiple(_) =>
-//     Console.error("Elym: getProperty - getter not supported on multiple elements")
-//     None
-//   }
-// }
+let style: (selection, string, ~value: string=?) => (selection, option<string>) = (sel, styleName, ~value=?) => {
+  // let getStyleValue = (el: Dom.element) => {
+  //   let computedStyle = getComputedStyle(el)
+  //   computedStyle->getPropertyValue(styleName)
+  // }
+  let getStyleValue = (el: Dom.element) => el
+    ->getComputedStyle
+    ->getPropertyValue(styleName)
 
-// let setValue: (selection, string) => selection = (sel, value) => {
-//   switch sel {
-//   | Single(Some(el)) => el->setValue(value)
-//   | Single(None) => Console.error("Elym: setValue - Single element is None.")
-//   | Multiple(elements) => elements->Array.forEach(el => el->setValue(value))
-//   }
-//   sel
-// }
+  // let setStyleValue = (el: Dom.element, v: string) => {
+  //   let style = el->getStyle
+  //   style->setProperty(styleName, v)
+  // }
+  let setStyleValue = (el: Dom.element, v: string) => el
+    ->getStyle
+    ->setProperty(styleName, v)
 
-// let getValue: selection => option<string> = sel => {
-//   switch sel {
-//   | Single(Some(el)) => el->getValue->Some
-//   | Single(None) =>
-//     Console.error("Elym: getValue - Single element is None.")
-//     None
-//   | Multiple(_elements) =>
-//     Console.error("Elym: getValue - getter not supported on multiple elements.")
-//     None
-//   }
-// }
+  let result = switch (sel, value) {
+  | (Single(Some(el)), Some(v)) =>
+    setStyleValue(el, v)
+    None
+  | (Single(Some(el)), None) =>
+    Some(getStyleValue(el))
+  | (Single(None), _) =>
+    Console.error("Elym: style - Single element is None.")
+    None
+  | (Multiple(elements), Some(v)) =>
+    elements->Array.forEach(el => setStyleValue(el, v))
+    None
+  | (Multiple(_), None) =>
+    Console.error("Elym: style - getter not supported on multiple elements.")
+    None
+  }
+  (sel, result)
+}
 
 let on: (selection, string, Dom.event => unit) => selection = (sel, eventType, callback) => {
   let addListener = el => {
