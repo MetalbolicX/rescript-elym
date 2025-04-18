@@ -310,8 +310,24 @@ let attr: (selection, string, ~value: string=?) => (selection, option<string>) =
   (selection, result)
 }
 
-let attributed: (selection, string, ~exists: bool=?) => (selection, option<bool>) = (sel, attrName, ~exists=?) => {
-  let result = switch (sel, exists) {
+/**
+ * Checks, sets, or removes the existence of an attribute on the selected element(s).
+ * @param {selection} selection - The current selection.
+ * @param {string} attrName - The name of the attribute.
+ * @param {~exists: bool=?} - Optional boolean to set or remove the attribute.
+ * @return {(selection, option<bool>)} - The selection and the attribute existence (if checking).
+ * @example
+ * ```res
+ * // Check if an attribute exists
+ * let (_, hasAttr) = select(Selector("#myElement"))->attributed("data-custom")
+ * // Set an attribute
+ * select(Selector("#myElement"))->attributed("data-custom", ~exists=true)->ignore
+ * // Remove an attribute
+ * select(Selector("#myElement"))->attributed("data-custom", ~exists=false)->ignore
+ * ```
+ */
+let attributed: (selection, string, ~exists: bool=?) => (selection, option<bool>) = (selection, attrName, ~exists=?) => {
+  let result = switch (selection, exists) {
   | (Single(Some(el)), Some(true)) =>
     el->setAttribute(attrName, "")
     None
@@ -333,11 +349,27 @@ let attributed: (selection, string, ~exists: bool=?) => (selection, option<bool>
     Console.error("Elym: attributed - getter not supported on multiple elements.")
     None
   }
-  (sel, result)
+  (selection, result)
 }
 
-let classed: (selection, string, ~exists: bool=?) => (selection, option<bool>) = (sel, className, ~exists=?) => {
-  let result = switch (sel, exists) {
+/**
+ * Adds, removes, or checks for a class on the selected element(s).
+ * @param {selection} selection - The current selection.
+ * @param {string} className - The name of the class.
+ * @param {~exists: bool=?} - Optional boolean to add or remove the class.
+ * @return {(selection, option<bool>)} - The selection and the class existence (if checking).
+ * @example
+ * ```res
+ * // Check if a class exists
+ * let (_, hasClass) = select(Selector(".myElement"))->classed("active")
+ * // Add a class
+ * select(Selector(".myElement"))->classed("active", ~exists=true)->ignore
+ * // Remove a class
+ * select(Selector(".myElement"))->classed("active", ~exists=false)->ignore
+ * ```
+ */
+let classed: (selection, string, ~exists: bool=?) => (selection, option<bool>) = (selection, className, ~exists=?) => {
+  let result = switch (selection, exists) {
   | (Single(Some(el)), Some(true)) =>
     el->classList->add([className])
     None
@@ -359,19 +391,44 @@ let classed: (selection, string, ~exists: bool=?) => (selection, option<bool>) =
     Console.error("Elym: classed - getter not supported on multiple elements.")
     None
   }
-  (sel, result)
+  (selection, result)
 }
 
-let replaceClass: (selection, string, string) => selection = (sel, oldClass, newClass) => {
-  switch sel {
+/**
+ * Replaces a class with another on the selected element(s).
+ * @param {selection} selection - The current selection.
+ * @param {string} oldClass - The class to be replaced.
+ * @param {string} newClass - The new class to add.
+ * @return {selection} - The updated selection.
+ * @example
+ * ```res
+ * select(Selector(".myElement"))->replaceClass("old-class", "new-class")->ignore
+ * ```
+ */
+let replaceClass: (selection, string, string) => selection = (selection, oldClass, newClass) => {
+  switch selection {
   | Single(Some(el)) => el->classList->replace(oldClass, newClass)
   | Single(None) => Console.error("Elym: replaceClass - Single element is None")
   | Multiple(elements) => elements->Array.forEach(el => el->classList->replace(oldClass, newClass))
   }
-  sel
+  selection
 }
 
-let property: (selection, string, ~value: propertyValue=?) => (selection, option<propertyValue>) = (sel, propName, ~value=?) => {
+/**
+ * Gets or sets a property of the selected element(s).
+ * @param {selection} selection - The current selection.
+ * @param {string} propName - The name of the property.
+ * @param {~value: propertyValue=?} - Optional value to set.
+ * @return {(selection, option<propertyValue>)} - The selection and the property value (if getting).
+ * @example
+ * ```res
+ * // Set a property
+ * select(Selector("#myInput"))->property("value", ~value=String("New Value"))->ignore
+ * // Get a property
+ * let (_, value) = select(Selector("#myInput"))->property("value")
+ * ```
+ */
+let property: (selection, string, ~value: propertyValue=?) => (selection, option<propertyValue>) = (selection, propName, ~value=?) => {
   let getValue: Dom.element => option<propertyValue> = el => {
     let rawValue = el->Obj.magic->Dict.get(propName)->Option.getExn
     switch Type.typeof(rawValue) {
@@ -397,7 +454,7 @@ let property: (selection, string, ~value: propertyValue=?) => (selection, option
     assign(el->Obj.magic, [(propName, value)]->Dict.fromArray)
   }
 
-  let result = switch (sel, value) {
+  let result = switch (selection, value) {
   | (Single(Some(el)), Some(v)) =>
     setValue(el, v)->ignore
     None
@@ -413,10 +470,24 @@ let property: (selection, string, ~value: propertyValue=?) => (selection, option
     Console.error("Elym: property - getter not supported on multiple elements.")
     None
   }
-  (sel, result)
+  (selection, result)
 }
 
-let style: (selection, string, ~value: string=?) => (selection, option<string>) = (sel, styleName, ~value=?) => {
+/**
+ * Gets or sets a style property of the selected element(s).
+ * @param {selection} selection - The current selection.
+ * @param {string} styleName - The name of the style property.
+ * @param {~value: string=?} - Optional value to set.
+ * @return {(selection, option<string>)} - The selection and the style value (if getting).
+ * @example
+ * ```res
+ * // Set a style
+ * select(Selector(".myElement"))->style("color", ~value="red")->ignore
+ * // Get a style
+ * let (_, color) = select(Selector(".myElement"))->style("color")
+ * ```
+ */
+let style: (selection, string, ~value: string=?) => (selection, option<string>) = (selection, styleName, ~value=?) => {
   let getStyleValue: Dom.element => string = el => el
     ->getComputedStyle
     ->getPropertyValue(styleName)
@@ -425,7 +496,7 @@ let style: (selection, string, ~value: string=?) => (selection, option<string>) 
     ->getStyle
     ->setProperty(styleName, v)
 
-  let result = switch (sel, value) {
+  let result = switch (selection, value) {
   | (Single(Some(el)), Some(v)) =>
     setStyleValue(el, v)
     None
@@ -441,10 +512,26 @@ let style: (selection, string, ~value: string=?) => (selection, option<string>) 
     Console.error("Elym: style - getter not supported on multiple elements.")
     None
   }
-  (sel, result)
+  (selection, result)
 }
 
-let styled: (selection, string, ~exists: bool=?) => (selection, option<bool>) = (sel, styleName, ~exists=?) => {
+/**
+ * Checks, sets, or removes the existence of a style property on the selected element(s).
+ * @param {selection} selection - The current selection.
+ * @param {string} styleName - The name of the style property.
+ * @param {~exists: bool=?} - Optional boolean to set or remove the style.
+ * @return {(selection, option<bool>)} - The selection and the style existence (if checking).
+ * @example
+ * ```res
+ * // Check if a style exists
+ * let (_, hasStyle) = select(Selector(".myElement"))->styled("display")
+ * // Set a style to its initial value
+ * select(Selector(".myElement"))->styled("display", ~exists=true)->ignore
+ * // Remove a style
+ * select(Selector(".myElement"))->styled("display", ~exists=false)->ignore
+ * ```
+ */
+let styled: (selection, string, ~exists: bool=?) => (selection, option<bool>) = (selection, styleName, ~exists=?) => {
   let checkStyle: Dom.element => bool = el => {
     let computedStyle = getComputedStyle(el)
     let value = computedStyle->getPropertyValue(styleName)
@@ -464,7 +551,7 @@ let styled: (selection, string, ~exists: bool=?) => (selection, option<bool>) = 
     }
   }
 
-  let result = switch (sel, exists) {
+  let result = switch (selection, exists) {
   | (Single(Some(el)), Some(true)) =>
     setStyle(el, true)
     None
@@ -483,10 +570,23 @@ let styled: (selection, string, ~exists: bool=?) => (selection, option<bool>) = 
     Console.error("Elym: styled - getter not supported on multiple elements.")
     None
   }
-  (sel, result)
+  (selection, result)
 }
 
-let on: (selection, string, Dom.event => unit) => selection = (sel, eventType, callback) => {
+/**
+ * Adds an event listener to the selected element(s).
+ * @param {selection} selection - The current selection.
+ * @param {string} eventType - The type of event to listen for.
+ * @param {Dom.event => unit} callback - The callback function to execute when the event occurs.
+ * @return {selection} - The updated selection.
+ * @example
+ * ```res
+ * select(Selector("#myButton"))->on("click", _ => {
+ *   Console.log("Button clicked!")
+ * })->ignore
+ * ```
+ */
+let on: (selection, string, Dom.event => unit) => selection = (selection, eventType, callback) => {
   let addListener = el => {
     let id = getNextListenerId()
     let listenersForElement = switch WeakMap.get(listeners, el) {
@@ -505,15 +605,25 @@ let on: (selection, string, Dom.event => unit) => selection = (sel, eventType, c
     el->addEventListener(eventType, callback)
   }
 
-  switch sel {
+  switch selection {
   | Single(Some(el)) => addListener(el)
   | Single(None) => Console.error("Elym: on - Single element is None.")
   | Multiple(elements) => elements->Array.forEach(addListener)
   }
-  sel
+  selection
 }
 
-let off: (selection, string) => selection = (sel, eventType) => {
+/**
+ * Removes event listeners of a specific type from the selected element(s).
+ * @param {selection} selection - The current selection.
+ * @param {string} eventType - The type of event to remove listeners for.
+ * @return {selection} - The updated selection.
+ * @example
+ * ```res
+ * select(Selector("#myButton"))->off("click")->ignore
+ * ```
+ */
+let off: (selection, string) => selection = (selection, eventType) => {
   let removeListener = el => {
     switch WeakMap.get(listeners, el) {
     | Some(dict) =>
@@ -529,17 +639,21 @@ let off: (selection, string) => selection = (sel, eventType) => {
     | None => ()
     }
   }
-  switch sel {
+  switch selection {
   | Single(Some(el)) => removeListener(el)
   | Single(None) => Console.error("Elym: off - Single element is None.")
   | Multiple(elements) => elements->Array.forEach(removeListener)
   }
-  sel
+  selection
 }
 
 /**
  * Removes the selected element(s) from the DOM.
  * @param {selection} selection - The selection to remove.
+ * @example
+ * ```res
+ * select(Selector("#myButton"))->remove
+ * ```
  */
 let remove: selection => unit = selection => {
   let removeSingleElement = el => {
