@@ -60,7 +60,15 @@ external addEventListener: (Dom.element, string, Dom.event => unit) => unit = "a
 external removeEventListener: (Dom.element, string, Dom.event => unit) => unit =
   "removeEventListener"
 
+// Add or remove DOM elements
 @send external removeElement: Dom.element => unit = "remove"
+@val @scope("document")
+external createRange: unit => Dom.range = "createRange"
+@send external createContextualFragment: (Dom.range, string) => Dom.documentFragment = "createContextualFragment"
+@get external firstChild: Dom.documentFragment => option<Dom.node> = "firstChild"
+@get external innerHTML: Dom.element => string = "innerHTML"
+@send external replaceChildren: (Dom.element, Dom.documentFragment) => unit = "replaceChildren"
+
 
 @unboxed
 type propertyValue =
@@ -154,6 +162,32 @@ let text: (selection, ~content: string=?) => (selection, option<string>) = (sel,
     None
   | (Multiple(_), None) =>
     Console.error("Elym: text - getter not supported on multiple elements.")
+    None
+  }
+  (sel, result)
+}
+
+let html: (selection, ~content: string=?) => (selection, option<string>) = (sel, ~content=?) => {
+  let setHtml = (el: Dom.element, htmlContent: string) => {
+    let range = createRange()
+    let fragment = range->createContextualFragment(htmlContent)
+    el->replaceChildren(fragment)
+  }
+
+  let result = switch (sel, content) {
+  | (Single(Some(el)), Some(htmlContent)) =>
+    el->setHtml(htmlContent)
+    None
+  | (Single(Some(el)), None) =>
+    Some(el->innerHTML)
+  | (Single(None), _) =>
+    Console.error("Elym: html - Single element is None.")
+    None
+  | (Multiple(elements), Some(htmlContent)) =>
+    elements->Array.forEach(el => el->setHtml(htmlContent))
+    None
+  | (Multiple(_), None) =>
+    Console.error("Elym: html - getter not supported on multiple elements.")
     None
   }
   (sel, result)

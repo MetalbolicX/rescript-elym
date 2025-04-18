@@ -30,3 +30,4 @@ let attributed: (selection, string, ~exists: bool=?) => (selection, option<bool>
 let property: (selection, string, ~value: propertyValue=?) => (selection, option<propertyValue>)
 let style: (selection, string, ~value: string=?) => (selection, option<string>)
 let styled: (selection, string, ~exists: bool=?) => (selection, option<bool>)
+let html: (selection, ~content: string=?) => (selection, option<string>)
