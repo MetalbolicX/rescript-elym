@@ -180,43 +180,6 @@ let attr: (selection, string, ~value: string=?) => (selection, option<string>) =
   (sel, result)
 }
 
-// let style: (selection, string, ~value: option<string>=?) => (selection, option<string>) = (sel, property, ~value=?) => {
-//   let setStyle = (el, prop, val) => {
-//     el->Js.Dom.setStyle(prop, val)
-//   }
-
-//   let getStyle = (el, prop) => {
-//     el->Js.Dom.getStyle(prop)
-//   }
-
-//   let removeStyle = (el, prop) => {
-//     el->Js.Dom.setStyle(prop, "")
-//   }
-
-//   let result = switch (sel, value) {
-//   | (Single(Some(el)), Some(v)) =>
-//     setStyle(el, property, v)
-//     None
-//   | (Single(Some(el)), None) when value === Some(None) =>
-//     removeStyle(el, property)
-//     None
-//   | (Single(Some(el)), None) =>
-//     Some(getStyle(el, property))
-//   | (Single(None), _) =>
-//     Console.error("Elym: style - Single element is None.")
-//     None
-//   | (Multiple(elements), Some(v)) =>
-//     elements->Array.forEach(el => setStyle(el, property, v))
-//     None
-//   | (Multiple(elements), None) when value === Some(None) =>
-//     elements->Array.forEach(el => removeStyle(el, property))
-//     None
-//   | (Multiple(_), None) =>
-//     Console.error("Elym: style - getter not supported on multiple elements.")
-//     None
-//   }
-//   (sel, result)
-// }
 let attributed: (selection, string, ~exists: bool=?) => (selection, option<bool>) = (sel, attrName, ~exists=?) => {
   let result = switch (sel, exists) {
   | (Single(Some(el)), Some(true)) =>
@@ -279,7 +242,7 @@ let replaceClass: (selection, string, string) => selection = (sel, oldClass, new
 }
 
 let property: (selection, string, ~value: propertyValue=?) => (selection, option<propertyValue>) = (sel, propName, ~value=?) => {
-  let getValue = (el: Dom.element) => {
+  let getValue: Dom.element => option<propertyValue> = el => {
     let rawValue = el->Obj.magic->Dict.get(propName)->Option.getExn
     switch Type.typeof(rawValue) {
     | #string => rawValue->Obj.magic->String->Some
@@ -295,7 +258,8 @@ let property: (selection, string, ~value: propertyValue=?) => (selection, option
     }
   }
 
-  let setValue = (el: Dom.element, v: propertyValue) => {
+  // let setValue = (el: Dom.element, v: propertyValue) => {
+  let setValue: (Dom.element, propertyValue) => Dict.t<'a> = (el, v) => {
     let value = switch v {
     | String(s) => Obj.magic(s)
     | Float(f) => Obj.magic(f)
@@ -324,19 +288,11 @@ let property: (selection, string, ~value: propertyValue=?) => (selection, option
 }
 
 let style: (selection, string, ~value: string=?) => (selection, option<string>) = (sel, styleName, ~value=?) => {
-  // let getStyleValue = (el: Dom.element) => {
-  //   let computedStyle = getComputedStyle(el)
-  //   computedStyle->getPropertyValue(styleName)
-  // }
-  let getStyleValue = (el: Dom.element) => el
+  let getStyleValue: Dom.element => string = el => el
     ->getComputedStyle
     ->getPropertyValue(styleName)
 
-  // let setStyleValue = (el: Dom.element, v: string) => {
-  //   let style = el->getStyle
-  //   style->setProperty(styleName, v)
-  // }
-  let setStyleValue = (el: Dom.element, v: string) => el
+  let setStyleValue: (Dom.element, string) => unit = (el, v) => el
     ->getStyle
     ->setProperty(styleName, v)
 
