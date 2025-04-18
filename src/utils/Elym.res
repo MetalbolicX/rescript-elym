@@ -1,16 +1,35 @@
+/**
+ * Represents a selection of DOM elements.
+ */
 type selection =
   | Single(option<Dom.element>)
   | Multiple(array<Dom.element>)
 
+/**
+ * A map to store event listeners for DOM elements.
+ */
 type listenerMap = WeakMap.t<Dom.element, Dict.t<array<(int, Dom.event => unit)>>>
 
+/**
+ * Represents a selector for DOM elements.
+ */
 type selector =
   | Selector(string)
   | Dom(Dom.element)
 
+/**
+ * WeakMap to store event listeners.
+ */
 let listeners: listenerMap = WeakMap.make()
 
+/**
+ * Counter for generating unique listener IDs.
+ */
 let nextListenerId = ref(0)
+
+/**
+ * Generates the next unique listener ID.
+ */
 let getNextListenerId = () => {
   nextListenerId := nextListenerId.contents + 1
   nextListenerId.contents
@@ -69,17 +88,35 @@ external createRange: unit => Dom.range = "createRange"
 @get external innerHTML: Dom.element => string = "innerHTML"
 @send external replaceChildren: (Dom.element, Dom.documentFragment) => unit = "replaceChildren"
 
-
+/**
+ * Represents a value that can be assigned to a property.
+ */
 @unboxed
 type propertyValue =
   | String(string)
   | Float(float)
   | Boolean(bool)
 
+/**
+ * Binding for Object.assign.
+ * @param {('a, 'a)} - The objects to be merged.
+ * @return {'a} - The merged object.
+ */
 @val @scope("Object")
 external assign: ('a, 'a) => 'a = "assign"
 
-// let select: string => selection = selector => Single(docQuerySelector(selector))
+/**
+ * Selects a single element based on the given selector at document level.
+ * @param {selector} selector - The selector to use.
+ * @return {selection} - The selected element.
+ * @example
+ * ```res
+ * // Using a css selector
+ * let container = Elym.select(Selector("#app"))
+ * // or use pass a Dom element, assuming list is an element
+ * let list = Elym.select(Dom(list))
+ * ```
+ */
 let select: selector => selection = selector => {
   switch selector {
     | Selector(str) => Single(str->docQuerySelector)
@@ -87,6 +124,15 @@ let select: selector => selection = selector => {
   }
 }
 
+/**
+ * Selects multiple elements based on the given Css selector .
+ * @param {string} selector - The selector to use.
+ * @return {selection} - The selected elements.
+ * @example
+ * ```res
+ * let items = Elym.selectAll("li")
+ * ```
+ */
 let selectAll: string => selection = selector => {
   let nodes = selector->docQuerySelectorAll
   let length = nodeListLength(nodes)
@@ -100,8 +146,14 @@ let selectAll: string => selection = selector => {
   }
 }
 
-let selectChild: (selection, string) => selection = (sel, selector) => {
-  switch sel {
+/**
+ * Selects a child element from the current selection.
+ * @param {selection} selection - The current selection.
+ * @param {string} selector - The selector for the child element.
+ * @return {selection} - The selected child element.
+ */
+let selectChild: (selection, string) => selection = (selection, selector) => {
+  switch selection {
   | Single(Some(element)) => Single(element->querySelector(selector))
   | Single(None) => Single(None)
   | Multiple(elements) =>
@@ -115,8 +167,14 @@ let selectChild: (selection, string) => selection = (sel, selector) => {
   }
 }
 
-let selectChildren: (selection, string) => selection = (sel, selector) => {
-  switch sel {
+/**
+ * Selects multiple child elements from the current selection.
+ * @param {selection} selection - The current selection.
+ * @param {string} selector - The selector for the child elements.
+ * @return {selection} - The selected child elements.
+ */
+let selectChildren: (selection, string) => selection = (selection, selector) => {
+  switch selection {
   | Single(Some(element)) =>
     let nodeList = element->querySelectorAll(selector)
     let length = nodeListLength(nodeList)
@@ -147,8 +205,20 @@ let selectChildren: (selection, string) => selection = (sel, selector) => {
   }
 }
 
-let text: (selection, ~content: string=?) => (selection, option<string>) = (sel, ~content=?) => {
-  let result = switch (sel, content) {
+/**
+ * Gets or sets the text content of the selected element(s).
+ * @param {selection} selection - The current selection.
+ * @param {~content: string=?} - Optional text content to set.
+ * @return {(selection, option<string>)} - The selection and the text content (if getting).
+ * ```res
+ * // Setting values
+ * select("p")->text(~content="Hello")->ignore
+ * // Getting values
+ * let (_, text) = select("p")->text
+ * ```
+ */
+let text: (selection, ~content: string=?) => (selection, option<string>) = (selection, ~content=?) => {
+  let result = switch (selection, content) {
   | (Single(Some(el)), Some(text)) =>
     el->setTextContent(text)
     None
@@ -164,17 +234,32 @@ let text: (selection, ~content: string=?) => (selection, option<string>) = (sel,
     Console.error("Elym: text - getter not supported on multiple elements.")
     None
   }
-  (sel, result)
+  (selection, result)
 }
 
-let html: (selection, ~content: string=?) => (selection, option<string>) = (sel, ~content=?) => {
+/**
+ * Gets or sets the HTML content of the selected element(s).
+ * @param {selection} selection - The current selection.
+ * @param {~content: string=?} - Optional HTML content to set.
+ * @return {(selection, option<string>)} - The selection and the HTML content (if getting).
+ * @example
+ * ```res
+ * // Setting HTML content
+ * select(Selector("#myElement"))->html(~content="<p>New content</p>")->ignore
+ * // Getting HTML content
+ * let (_, htmlContent) = select(Selector("#myElement"))->html
+ * // Setting HTML content for multiple elements
+ * selectAll(".myElements")->html(~content="<span>Updated</span>")->ignore
+ * ```
+ */
+let html: (selection, ~content: string=?) => (selection, option<string>) = (selection, ~content=?) => {
   let setHtml = (el: Dom.element, htmlContent: string) => {
     let range = createRange()
     let fragment = range->createContextualFragment(htmlContent)
     el->replaceChildren(fragment)
   }
 
-  let result = switch (sel, content) {
+  let result = switch (selection, content) {
   | (Single(Some(el)), Some(htmlContent)) =>
     el->setHtml(htmlContent)
     None
@@ -190,11 +275,24 @@ let html: (selection, ~content: string=?) => (selection, option<string>) = (sel,
     Console.error("Elym: html - getter not supported on multiple elements.")
     None
   }
-  (sel, result)
+  (selection, result)
 }
 
-let attr: (selection, string, ~value: string=?) => (selection, option<string>) = (sel, attrName, ~value=?) => {
-  let result = switch (sel, value) {
+/**
+ * Gets or sets an attribute of the selected element(s).
+ * @param {selection} selection - The current selection.
+ * @param {string} attrName - The name of the attribute.
+ * @param {~value: string=?} - Optional value to set.
+ * @return {(selection, option<string>)} - The selection and the attribute value (if getting).
+ * ```res
+ * // Setting values
+ * select("div")->attr("id", ~value="myDiv")->ignore
+ * // Getting values
+ * let (_, id) = select("div")->attr("id")
+ * ```
+ */
+let attr: (selection, string, ~value: string=?) => (selection, option<string>) = (selection, attrName, ~value=?) => {
+  let result = switch (selection, value) {
   | (Single(Some(el)), Some(v)) =>
     setAttribute(el, attrName, v)
     None
@@ -203,13 +301,13 @@ let attr: (selection, string, ~value: string=?) => (selection, option<string>) =
     Console.error("Elym: attr - Single element is None.")
     None
   | (Multiple(elements), Some(v)) =>
-    elements->Array.forEach(el => setAttribute(el, attrName, v))
+    elements->Array.forEach(el => el->setAttribute(attrName, v))
     None
   | (Multiple(_), None) =>
     Console.error("Elym: attr - getter not supported on multiple elements.")
     None
   }
-  (sel, result)
+  (selection, result)
 }
 
 let attributed: (selection, string, ~exists: bool=?) => (selection, option<bool>) = (sel, attrName, ~exists=?) => {
@@ -439,7 +537,11 @@ let off: (selection, string) => selection = (sel, eventType) => {
   sel
 }
 
-let remove: selection => unit = sel => {
+/**
+ * Removes the selected element(s) from the DOM.
+ * @param {selection} selection - The selection to remove.
+ */
+let remove: selection => unit = selection => {
   let removeSingleElement = el => {
     // Remove all event listeners
     switch WeakMap.get(listeners, el) {
@@ -454,7 +556,7 @@ let remove: selection => unit = sel => {
     el->removeElement
   }
 
-  switch sel {
+  switch selection {
   | Single(Some(el)) => removeSingleElement(el)
   | Single(None) => Console.error("Elym: remove - Single element is None.")
   | Multiple(elements) => elements->Array.forEach(removeSingleElement)
