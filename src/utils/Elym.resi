@@ -6,6 +6,12 @@ type selector =
   | Selector(string)
   | Dom(Dom.element)
 
+@unboxed
+type propertyValue =
+  | String(string)
+  | Float(float)
+  | Boolean(bool)
+
 // let select: string => selection
 let select: selector => selection
 let selectAll: string => selection
@@ -26,3 +32,4 @@ let value: (selection, ~newValue: string=?) => (selection, option<string>)
 let attr: (selection, string, ~value: string=?) => (selection, option<string>)
 let classed: (selection, string, ~exists: bool=?) => (selection, option<bool>)
 let attributed: (selection, string, ~exists: bool=?) => (selection, option<bool>)
+let property: (selection, string, ~value: propertyValue=?) => (selection, option<propertyValue>)

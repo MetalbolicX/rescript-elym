@@ -65,6 +65,15 @@ external removeEventListener: (Dom.element, string, Dom.event => unit) => unit =
 
 @send external removeElement: Dom.element => unit = "remove"
 
+@unboxed
+type propertyValue =
+  | String(string)
+  | Float(float)
+  | Boolean(bool)
+
+@val @scope("Object")
+external assign: ('a, 'a) => 'a = "assign"
+
 // let select: string => selection = selector => Single(docQuerySelector(selector))
 let select: selector => selection = selector => {
   switch selector {
@@ -288,6 +297,51 @@ let replaceClass: (selection, string, string) => selection = (sel, oldClass, new
   | Multiple(elements) => elements->Array.forEach(el => el->classList->replace(oldClass, newClass))
   }
   sel
+}
+
+let property: (selection, string, ~value: propertyValue=?) => (selection, option<propertyValue>) = (sel, propName, ~value=?) => {
+  let getValue = (el: Dom.element) => {
+    let rawValue = el->Obj.magic->Dict.get(propName)->Option.getExn
+    switch Type.typeof(rawValue) {
+    | #string => rawValue->Obj.magic->String->Dome
+    // | "number" =>
+    //   if Float.isInt(Obj.magic(rawValue)) {
+    //     Some(Int(Obj.magic(rawValue)))
+    //   } else {
+    //     Some(Float(Obj.magic(rawValue)))
+    //   }
+    | #number => rawValue->Obj.magic->Float->Some
+    | #boolean => Some(Boolean(Obj.magic(rawValue)))
+    | _ => None
+    }
+  }
+
+  let setValue = (el: Dom.element, v: propertyValue) => {
+    let value = switch v {
+    | String(s) => Obj.magic(s)
+    | Float(f) => Obj.magic(f)
+    | Boolean(b) => Obj.magic(b)
+    }
+    assign(el->Obj.magic, [(propName, value)]->Dict.fromArray)
+  }
+
+  let result = switch (sel, value) {
+  | (Single(Some(el)), Some(v)) =>
+    setValue(el, v)->ignore
+    None
+  | (Single(Some(el)), None) =>
+    getValue(el)
+  | (Single(None), _) =>
+    Console.error("Elym: property - Single element is None.")
+    None
+  | (Multiple(elements), Some(v)) =>
+    elements->Array.forEach(el => setValue(el, v)->ignore)
+    None
+  | (Multiple(_), None) =>
+    Console.error("Elym: property - getter not supported on multiple elements.")
+    None
+  }
+  (sel, result)
 }
 
 // let getCssProperty: (selection, string) => option<string> = (sel, property) => {

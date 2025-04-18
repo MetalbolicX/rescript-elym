@@ -34,16 +34,24 @@ let formTodoInput = Elym.select(Selector("#todo__form-input"))
 let formButtonAddTodo = Elym.select(Selector("#todo__form-add-task-button"))
 let todoList = Elym.select(Selector("#todo__list"))
 
-// formTodoInput
-// ->Elym.on("input", evt => {
-//   if evt->target->getInputValue->String.length > 3 {
-//     formButtonAddTodo->Elym.removeAttr("disabled")->ignore
-//   } else {
-//     formButtonAddTodo->Elym.setAttr("disabled", "")->ignore
-//   }
-// })
-// ->ignore
+formTodoInput
+->Elym.on("input", evt => {
+  if evt->target->getInputValue->String.length > 3 {
+    formButtonAddTodo->Elym.attributed("disabled", ~exists=false)->ignore
+  } else {
+    formButtonAddTodo->Elym.attributed("disabled", ~exists=true)->ignore
+  }
+})
+->ignore
 
+formButtonAddTodo
+->Elym.on("click", _ => {
+  switch formTodoInput->Elym.property("value") {
+  | (_, Some(text)) => Console.log2("Createa task needs to be added.", text)
+  | _ => Console.error("Input value is None")
+  }
+})
+->ignore
 // formButtonAddTodo
 // ->Elym.on("click", _ => {
 //   switch formTodoInput->Elym.getValue {
