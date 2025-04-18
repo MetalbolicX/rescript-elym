@@ -14,7 +14,6 @@ type propertyValue =
 
 let select: selector => selection
 let selectAll: string => selection
-// let createFromTemplate: string => selection
 // let appendChild: (selection, Dom.element) => selection
 let selectChild: (selection, string) => selection
 let selectChildren: (selection, string) => selection
