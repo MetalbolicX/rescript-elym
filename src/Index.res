@@ -53,6 +53,8 @@ formButtonAddTodo
 })
 ->ignore
 
+todoList->Elym.append(Tag("svg"))->ignore
+
 // formButtonAddTodo
 // ->Elym.on("click", _ => {
 //   switch formTodoInput->Elym.getValue {

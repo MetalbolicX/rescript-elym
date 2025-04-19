@@ -18,6 +18,13 @@ type selector =
   | Dom(Dom.element)
 
 /**
+ * Represents a the element to added in the DOM.
+ */
+type element =
+  | Dom(Dom.element)
+  | Tag(string)
+
+/**
  * WeakMap to store event listeners.
  */
 let listeners: listenerMap = WeakMap.make()
@@ -84,9 +91,14 @@ external removeEventListener: (Dom.element, string, Dom.event => unit) => unit =
 @val @scope("document")
 external createRange: unit => Dom.range = "createRange"
 @send external createContextualFragment: (Dom.range, string) => Dom.documentFragment = "createContextualFragment"
-@get external firstChild: Dom.documentFragment => option<Dom.node> = "firstChild"
 @get external innerHTML: Dom.element => string = "innerHTML"
 @send external replaceChildren: (Dom.element, Dom.documentFragment) => unit = "replaceChildren"
+
+@send external appendChild: (Dom.element, Dom.element) => unit = "appendChild"
+@get external ownerDocument: Dom.element => Dom.document = "ownerDocument"
+@send external createElement: (Dom.document, string) => Dom.element = "createElement"
+@send external createElementNS: (Dom.document, string, string) => Dom.element = "createElementNS"
+@get external namespaceURI: Dom.element => option<string> = "namespaceURI"
 
 /**
  * Represents a value that can be assigned to a property.
@@ -645,6 +657,65 @@ let off: (selection, string) => selection = (selection, eventType) => {
   | Multiple(elements) => elements->Array.forEach(removeListener)
   }
   selection
+}
+
+/**
+ * Appends a new element to each element in the selection.
+ * @param {selection} selection - The current selection.
+ * @param {element} typeOrElement - The type of element to append (e.g., "p", "circle") or a DOM element to append.
+ * @return {selection} - A new selection containing the appended elements.
+ * @example
+ * ```res
+ * // Append a paragraph to each div
+ * select(Selector("div"))->append(Tag("p"))->ignore
+ * // Append an SVG circle to an SVG element
+ * select(Selector("svg"))->append(Tag("circle"))->ignore
+ * // Append an existing DOM element
+ * let existingElement = document->Document.createElement("span")
+ * select(Selector("div"))->append(Dom(existingElement))->ignore
+ * ```
+ */
+let append: (selection, element) => selection = (selection, elementType) => {
+  // Helper function to create an element, inheriting namespace from parent if needed
+  let createElement: (Dom.element, string) => Dom.element = (parentEl, tag) => {
+    let ownerDoc = parentEl->ownerDocument
+    let parentNamespace = parentEl->namespaceURI
+
+    switch (parentNamespace, tag) {
+    | (Some("http://www.w3.org/2000/svg"), _) =>
+      // If parent is SVG, create element in SVG namespace
+      ownerDoc->createElementNS("http://www.w3.org/2000/svg", tag)
+    | (_, "svg") =>
+      // If tag is "svg", always create in SVG namespace
+      ownerDoc->createElementNS("http://www.w3.org/2000/svg", tag)
+    | _ =>
+      // For all other cases, create in HTML namespace
+      ownerDoc->createElement(tag)
+    }
+  }
+
+  // Function to append a new element or an existing element to a parent element
+  let appendElement: Dom.element => Dom.element = parentEl => {
+    let newEl = switch elementType {
+    | Tag(tag) => createElement(parentEl, tag)
+    | Dom(element) => element
+    }
+    parentEl->appendChild(newEl)
+    newEl
+  }
+
+  // Apply the append operation based on the selection type
+  switch selection {
+  | Single(Some(el)) =>
+    let newEl = el->appendElement
+    Single(Some(newEl))
+  | Single(None) =>
+    Console.error("Elym: append - Single element is None.")
+    Single(None)
+  | Multiple(elements) =>
+    let newElements = elements->Array.map(appendElement)
+    Multiple(newElements)
+  }
 }
 
 /**
