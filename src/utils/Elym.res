@@ -8,7 +8,8 @@ type selection =
 /**
  * A map to store event listeners for DOM elements.
  */
-type listenerMap = WeakMap.t<Dom.element, Dict.t<array<(int, Dom.event => unit)>>>
+// type listenerMap = WeakMap.t<Dom.element, Dict.t<array<(int, Dom.event => unit)>>>
+type listenerMap = WeakMap.t<Dom.element, Dict.t<array<(string, Dom.event => unit)>>>
 
 /**
  * Represents a selector for DOM elements.
@@ -29,18 +30,11 @@ type element =
  */
 let listeners: listenerMap = WeakMap.make()
 
-/**
- * Counter for generating unique listener IDs.
- */
-let nextListenerId = ref(0)
 
-/**
- * Generates the next unique listener ID.
- */
-let getNextListenerId = () => {
-  nextListenerId := nextListenerId.contents + 1
-  nextListenerId.contents
-}
+// Random function
+@val @scope(("window", "crypto"))
+external randomUUID: unit => string = "randomUUID"
+
 // Selectors
 @val @scope("document") @return(nullable)
 external docQuerySelector: string => option<Dom.element> = "querySelector"
@@ -600,7 +594,7 @@ let styled: (selection, string, ~exists: bool=?) => (selection, option<bool>) = 
  */
 let on: (selection, string, Dom.event => unit) => selection = (selection, eventType, callback) => {
   let addListener = el => {
-    let id = getNextListenerId()
+    let id = randomUUID()
     let listenersForElement = switch WeakMap.get(listeners, el) {
     | Some(dict) => dict
     | None => {
