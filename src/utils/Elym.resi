@@ -33,3 +33,4 @@ let style: (selection, string, ~value: string=?) => (selection, option<string>)
 let styled: (selection, string, ~exists: bool=?) => (selection, option<bool>)
 let html: (selection, ~content: string=?) => (selection, option<string>)
 let append: (selection, element) => selection
+let call: (selection, selection => selection) => selection

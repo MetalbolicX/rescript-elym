@@ -745,3 +745,33 @@ let remove: selection => unit = selection => {
   | Multiple(elements) => elements->Array.forEach(removeSingleElement)
   }
 }
+
+/**
+ * Invokes the specified function exactly once, passing in this selection.
+ * Returns the original selection. This facilitates method chaining.
+ * @param {selection} selection - The current selection.
+ * @param {selection => selection} func - The function to call.
+ * @return {selection} - The original selection.
+ * @example
+ * ```res
+ * // Using an arrow function
+ * select(Selector("p"))->call(p => p->attr("id", ~value="something"))->ignore
+ *
+ * // Using a named function
+ * let setColor = selection => {
+ *   selection->style("color", ~value="red")->ignore
+ *   selection
+ * }
+ * select(Selector("div"))->call(setColor)->ignore
+ *
+ * // Chaining multiple calls
+ * select(Selector("div"))
+ * ->call(el => el->attr("id", ~value="myDiv")->ignore)
+ * ->call(el => el->style("color", ~value="blue")->ignore)
+ * ->ignore
+ * ```
+ */
+let call: (selection, selection => selection) => selection = (selection, func) => {
+  func(selection)->ignore
+  selection
+}

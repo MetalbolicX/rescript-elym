@@ -53,7 +53,7 @@ formButtonAddTodo
 })
 ->ignore
 
-todoList->Elym.append(Tag("svg"))->Elym.append(Tag("circle"))->Elym.attr("r", ~value="20")->ignore
+
 
 // formButtonAddTodo
 // ->Elym.on("click", _ => {
