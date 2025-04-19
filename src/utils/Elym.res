@@ -685,9 +685,13 @@ let append: (selection, element) => selection = (selection, elementType) => {
     | (Some("http://www.w3.org/2000/svg"), _) =>
       // If parent is SVG, create element in SVG namespace
       ownerDoc->createElementNS("http://www.w3.org/2000/svg", tag)
+    | (Some("http://www.w3.org/1998/Math/MathML"), _) =>
+      ownerDoc->createElementNS("http://www.w3.org/1998/Math/MathML", tag)
     | (_, "svg") =>
       // If tag is "svg", always create in SVG namespace
       ownerDoc->createElementNS("http://www.w3.org/2000/svg", tag)
+    | (_, "math") =>
+      ownerDoc->createElementNS("http://www.w3.org/1998/Math/MathML", tag)
     | _ =>
       // For all other cases, create in HTML namespace
       ownerDoc->createElement(tag)
