@@ -93,6 +93,8 @@ external createRange: unit => Dom.range = "createRange"
 @send external createElement: (Dom.document, string) => Dom.element = "createElement"
 @send external createElementNS: (Dom.document, string, string) => Dom.element = "createElementNS"
 @get external namespaceURI: Dom.element => option<string> = "namespaceURI"
+@send @variadic
+external appendMany: (Dom.element, array<Dom.element>) => unit = "append"
 
 /**
  * Represents a value that can be assigned to a property.
@@ -712,6 +714,39 @@ let append: (selection, element) => selection = (selection, elementType) => {
     Single(None)
   | Multiple(elements) =>
     let newElements = elements->Array.map(appendElement)
+    Multiple(newElements)
+  }
+}
+
+/**
+ * Appends multiple child elements to each element in the selection.
+ * @param {selection} selection - The current selection.
+ * @param {array<Dom.element>} children - An array of DOM elements to append.
+ * @return {selection} - A new selection containing the appended elements.
+ * @example
+ * ```res
+ * let child1 = document->Document.createElement("div")
+ * let child2 = document->Document.createElement("span")
+ * select(Selector("#parent"))->appendChildren([child1, child2])->ignore
+ * ```
+ */
+let appendChildren: (selection, array<Dom.element>) => selection = (selection, children) => {
+  // Function to append children to a parent element
+  let appendToElement = (parentEl) => {
+    parentEl->appendMany(children)
+    children
+  }
+
+  // Apply the append operation based on the selection type
+  switch selection {
+  | Single(Some(el)) =>
+    let newElements = appendToElement(el)
+    Multiple(newElements)
+  | Single(None) =>
+    Console.error("Elym: appendChildren - Single element is None.")
+    Multiple([])
+  | Multiple(elements) =>
+    let newElements = elements->Array.flatMap(el => appendToElement(el))
     Multiple(newElements)
   }
 }

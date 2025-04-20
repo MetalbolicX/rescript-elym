@@ -35,3 +35,4 @@ let html: (selection, ~content: string=?) => (selection, option<string>)
 let append: (selection, element) => selection
 let call: (selection, selection => selection) => selection
 let each: (selection, (Dom.element, int) => unit) => selection
+let appendChildren: (selection, array<Dom.element>) => selection
