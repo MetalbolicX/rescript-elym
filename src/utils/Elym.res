@@ -99,8 +99,8 @@ external createRange: unit => Dom.range = "createRange"
  */
 @unboxed
 type propertyValue =
-  | String(string)
-  | Float(float)
+  | Str(string)
+  | Number(float)
   | Boolean(bool)
 
 /**
@@ -438,14 +438,14 @@ let property: (selection, string, ~value: propertyValue=?) => (selection, option
   let getValue: Dom.element => option<propertyValue> = el => {
     let rawValue = el->Obj.magic->Dict.get(propName)->Option.getExn
     switch Type.typeof(rawValue) {
-    | #string => rawValue->Obj.magic->String->Some
+    | #string => rawValue->Obj.magic->Str->Some
     // | "number" =>
     //   if Float.isInt(Obj.magic(rawValue)) {
     //     Some(Int(Obj.magic(rawValue)))
     //   } else {
     //     Some(Float(Obj.magic(rawValue)))
     //   }
-    | #number => rawValue->Obj.magic->Float->Some
+    | #number => rawValue->Obj.magic->Number->Some
     | #boolean => Some(Boolean(Obj.magic(rawValue)))
     | _ => None
     }
@@ -453,8 +453,8 @@ let property: (selection, string, ~value: propertyValue=?) => (selection, option
 
   let setValue: (Dom.element, propertyValue) => Dict.t<'a> = (el, v) => {
     let value = switch v {
-    | String(s) => Obj.magic(s)
-    | Float(f) => Obj.magic(f)
+    | Str(s) => Obj.magic(s)
+    | Number(f) => Obj.magic(f)
     | Boolean(b) => Obj.magic(b)
     }
     assign(el->Obj.magic, [(propName, value)]->Dict.fromArray)
@@ -773,5 +773,44 @@ let remove: selection => unit = selection => {
  */
 let call: (selection, selection => selection) => selection = (selection, func) => {
   func(selection)->ignore
+  selection
+}
+
+/**
+ * Invokes the specified function for each element in the selection.
+ * @param {selection} selection - The current selection.
+ * @param {(Dom.element, int) => unit} func - The function to call for each element.
+ * @return {selection} - The original selection.
+ * @example
+ * ```res
+ * // Simple example
+ * selectAll(".item")->each((el, i) => {
+ *   el->Dom.Element.setAttribute("data-index", Belt.Int.toString(i))
+ * })->ignore
+ *
+ * // Example with text content
+ * selectAll("li")->each((el, i) => {
+ *   el->Dom.Element.setTextContent(`Item ${Belt.Int.toString(i + 1)}`)
+ * })->ignore
+ *
+ * // Example with nested selections
+ * select("#list")->each((parentEl, _) => {
+ *   selectAll("li", parentEl)->each((childEl, i) => {
+ *     childEl->Dom.Element.setTextContent(`Child ${Belt.Int.toString(i + 1)}`)
+ *   })->ignore
+ * })->ignore
+ * ```
+ */
+let each: (selection, (Dom.element, int) => unit) => selection = (selection, func) => {
+  switch selection {
+  | Single(Some(el)) =>
+    func(el, 0)
+  | Single(None) =>
+    Console.error("Elym: each - Single element is None.")
+  | Multiple(elements) =>
+    elements->Array.forEachWithIndex((el, i) => {
+      func(el, i)
+    })
+  }
   selection
 }

@@ -47,8 +47,11 @@ formTodoInput
 formButtonAddTodo
 ->Elym.on("click", _ => {
   switch formTodoInput->Elym.property("value") {
-  | (_, Some(text)) => Console.log2("Createa task needs to be added.", text)
-  | _ => Console.error("Input value is None")
+  | (_, Some(Str(txt))) => {
+    todoList->Elym.append(Tag("li"))->Elym.text(~content=txt)->ignore
+    todoList->Elym.selectChildren("li")->Elym.each((el, i) => Console.log2(el, i))->ignore
+  }
+  | _ => Console.error("Error on the input, it is invalid")
   }
 })
 ->ignore

@@ -12,8 +12,8 @@ type element =
 
 @unboxed
 type propertyValue =
-  | String(string)
-  | Float(float)
+  | Str(string)
+  | Number(float)
   | Boolean(bool)
 
 let select: selector => selection
@@ -34,3 +34,4 @@ let styled: (selection, string, ~exists: bool=?) => (selection, option<bool>)
 let html: (selection, ~content: string=?) => (selection, option<string>)
 let append: (selection, element) => selection
 let call: (selection, selection => selection) => selection
+let each: (selection, (Dom.element, int) => unit) => selection
