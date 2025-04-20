@@ -1,5 +1,5 @@
 {
-  "name": "todo",
+  "name": "rescript-elym",
   "sources": [
     { "dir": "src", "subdirs": true },
     { "dir": "test", "subdirs": true, "type": "dev" }
