@@ -48,8 +48,11 @@ formButtonAddTodo
 ->Elym.on("click", _ => {
   switch formTodoInput->Elym.property("value") {
   | (_, Some(Str(txt))) => {
-    todoList->Elym.append(Tag("li"))->Elym.text(~content=txt)->ignore
-    todoList->Elym.selectChildren("li")->Elym.each((el, i) => Console.log2(el, i))->ignore
+    let ts = Elym.create(Template(`<button>${txt}</button>`))
+    switch ts {
+    | Some(el) => todoList->Elym.append(Dom(el))->ignore
+    | None => ()
+    }
   }
   | _ => Console.error("Error on the input, it is invalid")
   }

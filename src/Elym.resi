@@ -16,6 +16,10 @@ type propertyValue =
   | Number(float)
   | Boolean(bool)
 
+type elementCreator =
+  | Tag(string)
+  | Template(string)
+
 let select: selector => selection
 let selectAll: string => selection
 let selectChild: (selection, string) => selection
@@ -36,3 +40,4 @@ let append: (selection, element) => selection
 let call: (selection, selection => selection) => selection
 let each: (selection, (Dom.element, int) => unit) => selection
 let appendChildren: (selection, array<Dom.element>) => selection
+let create: elementCreator => option<Dom.element>

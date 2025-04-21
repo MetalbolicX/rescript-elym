@@ -84,7 +84,6 @@ external removeEventListener: (Dom.element, string, Dom.event => unit) => unit =
 @send external removeElement: Dom.element => unit = "remove"
 @val @scope("document")
 external createRange: unit => Dom.range = "createRange"
-@send external createContextualFragment: (Dom.range, string) => Dom.documentFragment = "createContextualFragment"
 @get external innerHTML: Dom.element => string = "innerHTML"
 @send external replaceChildren: (Dom.element, Dom.documentFragment) => unit = "replaceChildren"
 
@@ -96,6 +95,11 @@ external createRange: unit => Dom.range = "createRange"
 @send @variadic
 external appendMany: (Dom.element, array<Dom.element>) => unit = "append"
 
+@send external createContextualFragment: (Dom.range, string) => Dom.documentFragment = "createContextualFragment"
+@val @scope("document") external createElementNoDoc: string => Dom.element = "createElement"
+@val @scope("document") external createElementNSNoDoc: (string, string) => Dom.element = "createElementNS"
+@get external firstElementChild: Dom.documentFragment => Null.t<Dom.element> = "firstElementChild"
+
 /**
  * Represents a value that can be assigned to a property.
  */
@@ -104,6 +108,10 @@ type propertyValue =
   | Str(string)
   | Number(float)
   | Boolean(bool)
+
+type elementCreator =
+  | Tag(string)
+  | Template(string)
 
 /**
  * Binding for Object.assign.
@@ -848,4 +856,60 @@ let each: (selection, (Dom.element, int) => unit) => selection = (selection, fun
     })
   }
   selection
+}
+
+/**
+ * Creates a single DOM element from a tag name.
+ * @param {string} tagName - The tag name, optionally prefixed with "svg:" or "math:" for namespace.
+ * @return {Dom.element} - The created DOM element.
+ */
+let createElement: string => Dom.element = tagName => {
+  let (namespace, tag) = switch String.split(tagName, ":") {
+  | [ns, t] when ns == "svg" => (Some("http://www.w3.org/2000/svg"), t)
+  | [ns, t] when ns == "math" => (Some("http://www.w3.org/1998/Math/MathML"), t)
+  | _ => (None, tagName)
+  }
+
+  switch namespace {
+  | Some(ns) => createElementNSNoDoc(ns, tag)
+  | None => createElementNoDoc(tag)
+  }
+}
+
+/**
+ * Creates DOM elements from an HTML template string.
+ * @param {string} html - The HTML template string.
+ * @return {array<Dom.element>} - An array of created DOM elements.
+ */
+let createFromTemplate: string => option<Dom.element> = html => {
+  let fragment = createRange()->createContextualFragment(html)
+  switch fragment->firstElementChild {
+    | Value(el) => Some(el)
+    | Null => None
+  }
+}
+
+/**
+ * Creates a new DOM element or elements from a tag or HTML template.
+ * @param {elementCreator} creator - The tag name or HTML template to create element(s) from.
+ * @return {option<Dom.element>} - A new element(s) created.
+ * @example
+ * ```res
+ * // Create a single element
+ * let divSelection = Elym.create(Tag("div"))
+ *
+ * // Create an SVG element
+ * let svgCircle = Elym.create(Tag("svg:circle"))
+ *
+ * // Create multiple elements from a template
+ * let listItems = Elym.create(Template("<li>Item 1</li><li>Item 2</li><li>Item 3</li>"))
+ * ```
+ */
+let create: elementCreator => option<Dom.element> = creator => {
+  switch creator {
+  | Tag(tagName) =>
+      let element = createElement(tagName)
+      Some(element)
+  | Template(html) => createFromTemplate(html)
+  }
 }
