@@ -5,7 +5,6 @@
       "name": "chessboard",
       "dependencies": {
         "@rescript/core": "1.6.1",
-        "confirm-extended-dialog": "^1.0.6",
         "rescript": "11.1.4",
       },
       "devDependencies": {
@@ -55,8 +54,6 @@
     "color-name": ["color-name@1.1.4", "", {}, "sha512-dOy+3AuW3a2wNbZHIuMZpTcgjGuLU/uBL/ubcZF9OXbDo8ff4O8yVp5Bf0efS8uEoYo5q4Fx7dY9OgQGXgAsQA=="],
 
     "combined-stream": ["combined-stream@1.0.8", "", { "dependencies": { "delayed-stream": "~1.0.0" } }, "sha512-FQN4MRfuJeHf7cBbBMJFXhKSDq+2kAArBlmRBvcvFE5BB1HZKXtSFASDhdlz9zOYwxh8lDdnvmMOe/+5cdoEdg=="],
-
-    "confirm-extended-dialog": ["confirm-extended-dialog@1.0.6", "", {}, "sha512-vEGD0GhnDnU7YQbmtpII/3lstYUFOoZePLhhPbzIrNaJZJGt52RqdPc9B8uv8v2l8H7hwL8EzDWSC+XZEPKQdw=="],
 
     "cross-spawn": ["cross-spawn@7.0.6", "", { "dependencies": { "path-key": "^3.1.0", "shebang-command": "^2.0.0", "which": "^2.0.1" } }, "sha512-uV2QOWP2nWzsy2aMp8aRibhi9dlzF5Hgh5SHaB9OiTGEyDTiJJyx0uy51QXdyWbtAHNua4XJzUKca3OzKUd3vA=="],
 

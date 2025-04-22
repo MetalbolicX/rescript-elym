@@ -21,7 +21,6 @@
   "license": "MIT",
   "dependencies": {
     "@rescript/core": "1.6.1",
-    "confirm-extended-dialog": "^1.0.6",
     "rescript": "11.1.4"
   },
   "devDependencies": {
