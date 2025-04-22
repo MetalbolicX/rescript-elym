@@ -53,7 +53,7 @@ let formButtonAddTodo = Elym.select(Selector("#todo__form-add-task-button"))
 let todoList = Elym.select(Selector("#todo__list"))
 
 formTodoInput
-->Elym.on("input", evt => {
+->Elym.on("input", (evt: Dom.event) => {
   if evt->getInputTarget->getInputValue->String.length > 3 {
     formButtonAddTodo->Elym.attributed("disabled", ~exists=false)->ignore
   } else {
