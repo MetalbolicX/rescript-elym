@@ -1,34 +1,64 @@
-// let createTask: string => Elym.selection = content => {
-//   let task = Elym.createFromTemplate(`
-//     <li class="todo__list-task">
-//         <div class="todo__list-task-content">
-//             <textarea class="todo__list-task-description" placeholder="Enter your task here" disabled>${content}</textarea>
-//             <button class="todo__list-task-button-edit">✏</button>
-//             <button class="todo__list-task-button-delete">🗑</button>
-//         </div>
-//     </li>`)
-//   task->Elym.selectChild(".todo__list-task-button-edit")
-//   ->Elym.on("click", _ => {
-//     let taskDescription = task->Elym.selectChild(".todo__list-task-description")
-//     switch taskDescription->Elym.getAttr("disabled") {
-//     | Some(_) => taskDescription->Elym.rmAttr("disabled")->ignore
-//     | None => taskDescription->Elym.setAttr("disabled", "")->ignore
-//     }
-//   })->ignore
-//   task->Elym.selectChild(".todo__list-task-description")
-//   ->Elym.on("blur", _ => {
-//     let taskDescription = task->Elym.selectChild(".todo__list-task-description")
-//     taskDescription->Elym.setAttr("disabled", "")->ignore
-//   })->ignore
-//   task->Elym.selectChild(".todo__list-task-button-delete")
-//   ->Elym.on("click", _ => {
-//     // TODO: Implement task deletion and remove the function of the event listener first.
-//     task->Elym.remove
-//   })->ignore
-//   task
-// }
-@get external target: Dom.event => Dom.eventTarget_like<Dom.htmlInputElement> = "target"
-@get external getInputValue: Dom.eventTarget_like<Dom.htmlInputElement> => string = "value"
+@get external getInputTarget: Dom.event => Dom.event_like<Dom.htmlInputElement> = "target"
+@get external getInputValue: Dom.event_like<Dom.htmlInputElement> => string = "value"
+
+@get
+external getTextAreaTarget: Dom.event => Dom.eventTarget_like<Dom.htmlTextAreaElement> = "target"
+@set
+external setDisabled: (Dom.eventTarget_like<Dom.htmlTextAreaElement>, bool) => unit = "disabled"
+
+let createTask: string => option<Dom.element> = content => {
+  let node = Elym.create(
+    Template(
+      `
+    <li class="todo__list-task">
+      <div class="todo__list-task-content">
+        <textarea class="todo__list-task-description" placeholder="Enter your task here" disabled>${content}</textarea>
+        <button class="todo__list-task-button-edit">✏</button>
+        <button class="todo__list-task-button-delete">🗑</button>
+      </div>
+    </li>`,
+    ),
+  )
+  switch node {
+  | None => ()
+  | Some(n) => {
+      Elym.select(Dom(n))
+      ->Elym.selectChild(".todo__list-task-button-edit")
+      ->Elym.on("click", _ => {
+        Elym.select(Dom(n))
+        ->Elym.selectChild(".todo__list-task-description")
+        ->Elym.attributed("disabled", ~exists=false)
+        ->ignore
+      })
+      ->ignore
+
+      Elym.select(Dom(n))
+      ->Elym.selectChild(".todo__list-task-description")
+      ->Elym.on("blur", (evt: Dom.event) => evt->getTextAreaTarget->setDisabled(true))
+      ->ignore
+
+      Elym.select(Dom(n))
+      ->Elym.selectChild(".todo__list-task-button-delete")
+      ->Elym.on("click", _ => {
+        Elym.select(Dom(n))
+        ->Elym.selectChild(".todo__list-task-button-edit")
+        ->Elym.off("click")
+        ->ignore
+        Elym.select(Dom(n))
+        ->Elym.selectChild(".todo__list-task-description")
+        ->Elym.off("blur")
+        ->ignore
+        Elym.select(Dom(n))
+        ->Elym.selectChild(".todo__list-task-button-delete")
+        ->Elym.off("click")
+        ->ignore
+        Elym.select(Dom(n))->Elym.remove
+      })
+      ->ignore
+    }
+  }
+  node
+}
 
 let formTodoInput = Elym.select(Selector("#todo__form-input"))
 let formButtonAddTodo = Elym.select(Selector("#todo__form-add-task-button"))
@@ -36,7 +66,7 @@ let todoList = Elym.select(Selector("#todo__list"))
 
 formTodoInput
 ->Elym.on("input", evt => {
-  if evt->target->getInputValue->String.length > 3 {
+  if evt->getInputTarget->getInputValue->String.length > 3 {
     formButtonAddTodo->Elym.attributed("disabled", ~exists=false)->ignore
   } else {
     formButtonAddTodo->Elym.attributed("disabled", ~exists=true)->ignore
@@ -48,30 +78,13 @@ formButtonAddTodo
 ->Elym.on("click", _ => {
   switch formTodoInput->Elym.property("value") {
   | (_, Some(Str(txt))) => {
-    let ts = Elym.create(Template(`<button>${txt}</button>`))
-    switch ts {
-    | Some(el) => todoList->Elym.append(Dom(el))->ignore
-    | None => ()
+      let task = createTask(txt)
+      switch task {
+      | Some(el) => todoList->Elym.append(Dom(el))->ignore
+      | None => ()
+      }
     }
-  }
   | _ => Console.error("Error on the input, it is invalid")
   }
 })
 ->ignore
-
-
-
-// formButtonAddTodo
-// ->Elym.on("click", _ => {
-//   switch formTodoInput->Elym.getValue {
-//   | Some(text) =>
-//     let newTask = createTask(text)
-//     switch newTask {
-//     | Single(Some(task)) => todoList->Elym.appendChild(task)->ignore
-//     | Single(None) => Console.error("Task creation failed")
-//     | Multiple(_) => Console.error("Multiple tasks cannot be created at once")
-//     }
-//   | None => Console.error("Input value is None")
-//   }
-// })
-// ->ignore
