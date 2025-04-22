@@ -40,18 +40,6 @@ let createTask: string => option<Dom.element> = content => {
       Elym.select(Dom(n))
       ->Elym.selectChild(".todo__list-task-button-delete")
       ->Elym.on("click", _ => {
-        Elym.select(Dom(n))
-        ->Elym.selectChild(".todo__list-task-button-edit")
-        ->Elym.off("click")
-        ->ignore
-        Elym.select(Dom(n))
-        ->Elym.selectChild(".todo__list-task-description")
-        ->Elym.off("blur")
-        ->ignore
-        Elym.select(Dom(n))
-        ->Elym.selectChild(".todo__list-task-button-delete")
-        ->Elym.off("click")
-        ->ignore
         Elym.select(Dom(n))->Elym.remove
       })
       ->ignore

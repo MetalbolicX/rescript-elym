@@ -100,6 +100,9 @@ external appendMany: (Dom.element, array<Dom.element>) => unit = "append"
 @val @scope("document") external createElementNSNoDoc: (string, string) => Dom.element = "createElementNS"
 @get external firstElementChild: Dom.documentFragment => Null.t<Dom.element> = "firstElementChild"
 
+@val @scope("Array")
+external toArray: Dom.nodeList => array<Dom.element> = "from"
+
 /**
  * Represents a value that can be assigned to a property.
  */
@@ -759,35 +762,35 @@ let appendChildren: (selection, array<Dom.element>) => selection = (selection, c
   }
 }
 
-/**
- * Removes the selected element(s) from the DOM.
- * @param {selection} selection - The selection to remove.
- * @example
- * ```res
- * select(Selector("#myButton"))->remove
- * ```
- */
-let remove: selection => unit = selection => {
-  let removeSingleElement = el => {
-    // Remove all event listeners
-    switch WeakMap.get(listeners, el) {
-    | Some(dict) =>
-      dict->Dict.keysToArray->Array.forEach(eventType => {
-        off(Single(Some(el)), eventType)->ignore
-      })
-    | None => ()
-    }
+// /**
+//  * Removes the selected element(s) from the DOM.
+//  * @param {selection} selection - The selection to remove.
+//  * @example
+//  * ```res
+//  * select(Selector("#myButton"))->remove
+//  * ```
+//  */
+// let remove: selection => unit = selection => {
+//   let removeSingleElement = el => {
+//     // Remove all event listeners
+//     switch WeakMap.get(listeners, el) {
+//     | Some(dict) =>
+//       dict->Dict.keysToArray->Array.forEach(eventType => {
+//         off(Single(Some(el)), eventType)->ignore
+//       })
+//     | None => ()
+//     }
 
-    // Remove the element from the DOM
-    el->removeElement
-  }
+//     // Remove the element from the DOM
+//     el->removeElement
+//   }
 
-  switch selection {
-  | Single(Some(el)) => removeSingleElement(el)
-  | Single(None) => Console.error("Elym: remove - Single element is None.")
-  | Multiple(elements) => elements->Array.forEach(removeSingleElement)
-  }
-}
+//   switch selection {
+//   | Single(Some(el)) => removeSingleElement(el)
+//   | Single(None) => Console.error("Elym: remove - Single element is None.")
+//   | Multiple(elements) => elements->Array.forEach(removeSingleElement)
+//   }
+// }
 
 /**
  * Invokes the specified function exactly once, passing in this selection.
@@ -913,3 +916,60 @@ let create: elementCreator => option<Dom.element> = creator => {
   | Template(html) => createFromTemplate(html)
   }
 }
+
+/**
+ * Recursively removes all event listeners from an element and its children.
+ * @param {Dom.element} element - The root element to start removing listeners from.
+ */
+let rec removeAllEventListeners = (element: Dom.element) => {
+  // Remove all event listeners from the current element
+  switch WeakMap.get(listeners, element) {
+  | Some(dict) => {
+      dict->Dict.keysToArray->Array.forEach(eventType => {
+        off(Single(Some(element)), eventType)->ignore
+      })
+      let _ = WeakMap.delete(listeners, element)
+    }
+  | None => ()
+  }
+
+  // Get all child elements
+  let children = element->querySelectorAll("*")->toArray
+  children->Array.forEach(child => {
+    switch Obj.magic(child)["nodeType"] {
+    | 1 => removeAllEventListeners(Obj.magic(child)) // Element nodes
+    | _ => () // Ignore non-element nodes
+    }
+  })
+}
+
+/**
+ * Removes the selected element(s) from the DOM and cleans up all associated event listeners.
+ * @param {selection} selection - The selection to remove.
+ * @example
+ * ```res
+ * select(Selector("#myButton"))->removeWithListeners
+ * ```
+ */
+let removeWithListeners: selection => unit = selection => {
+  let removeSingleElement = el => {
+    removeAllEventListeners(el)
+    el->removeElement
+  }
+
+  switch selection {
+  | Single(Some(el)) => removeSingleElement(el)
+  | Single(None) => Console.error("Elym: removeWithListeners - Single element is None.")
+  | Multiple(elements) => elements->Array.forEach(removeSingleElement)
+  }
+}
+
+/**
+ * Removes the selected element(s) from the DOM and cleans up all associated event listeners.
+ * @param {selection} selection - The selection to remove.
+ * @example
+ * ```res
+ * select(Selector("#myButton"))->remove
+ * ```
+ */
+let remove: selection => unit = removeWithListeners
