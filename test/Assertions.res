@@ -20,8 +20,6 @@ let isTruthy: (bool, ~message: string=?) => unit = (a, ~message as msg="") =>
 let isIntEqualTo: (int, int, ~message: string=?) => unit = (a, b, ~message as msg="") =>
   assertion((a, b) => a == b, a, b, ~operator="Integer equals to", ~message=msg)
 
-let passWith: (string) => unit = message =>
-  isTruthy(true, ~message=message)
+let passWith: string => unit = message => isTruthy(true, ~message)
 
-let failWith: (string) => unit = message =>
-  isTruthy(false, ~message=message)
+let failWith: string => unit = message => isTruthy(false, ~message)

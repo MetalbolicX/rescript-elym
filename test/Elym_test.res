@@ -18,6 +18,11 @@ external querySelector: (Dom.element, string) => option<Dom.element> = "querySel
 @set external setTextContent: (Dom.element, string) => unit = "textContent"
 @set external setId: (Dom.element, string) => unit = "id"
 @get external getId: Dom.element => string = "id"
+@val @scope("document")
+external createEvent: string => Dom.event = "createEvent"
+@send
+external initEvent: (Dom.event, string, bool, bool) => unit = "initEvent"
+@send external dispatchEvent: (Dom.element, Dom.event) => unit = "dispatchEvent"
 
 // Test utilities
 let setup: unit => Dom.element = () => {
@@ -200,6 +205,44 @@ test("call and each correctly invoke functions on the selection", () => {
   })
   ->ignore
   count.contents->isIntEqualTo(1, ~message="each correctly invoked the function for each element.")
+
+  container->teardown
+})
+
+test("on and off correctly add and remove event listeners", () => {
+  let container = setup()
+
+  let selection = Elym.select(Selector("div"))
+  let isClicked = ref(false)
+
+  // Add event listener
+  selection
+  ->Elym.on("click", _ => {
+    isClicked := true
+  })
+  ->ignore
+
+  switch selection {
+  | Single(Some(el)) => {
+      // Create event using document.createEvent which is JSDOM compatible
+      let clickEvent = createEvent("Event")
+      clickEvent->initEvent("click", true, true) // type, bubbles, cancelable
+
+      // First dispatch - should trigger the handler
+      el->dispatchEvent(clickEvent)
+      isClicked.contents->isTruthy(~message="on correctly added the click event listener.")
+
+      // Now test the off functionality
+      selection->Elym.off("click")->ignore
+      isClicked := false
+
+      // Second dispatch - should NOT trigger the handler
+      el->dispatchEvent(clickEvent)
+      !isClicked.contents->isTruthy(~message="off correctly removed the click event listener.")
+    }
+  | Single(None) => failWith("Expected a single element.")
+  | Multiple(_) => failWith("Elym select method is not capable of selecting multiple elements.")
+  }
 
   container->teardown
 })
