@@ -5,7 +5,13 @@ open Assertions
 @val external document: Dom.document = "document"
 @send external createElement: (Dom.document, string) => Dom.element = "createElement"
 @send external appendChild: (Dom.element, Dom.element) => unit = "appendChild"
-@send external querySelector: (Dom.document, string) => Nullable.t<Dom.element> = "querySelector"
+@send @return(nullable)
+external querySelector: (Dom.element, string) => option<Dom.element> = "querySelector"
+// @val
+// external query: (
+//   @unwrap [#Doc(Dom.document) | #Element(Dom.element)],
+//   string,
+// ) => Nullable.t<Dom.element> = "querySelector"
 @send external remove: Dom.element => unit = "remove"
 @get external body: Dom.document => Dom.element = "body"
 @get external textContent: Dom.element => string = "textContent"
@@ -79,7 +85,8 @@ test("DOM element exists and check the id, textContent and data-id", () => {
 
   let (withoutDataId, _) = withDataId->Elym.attributed("data-id", ~exists=false)
   switch withoutDataId->Elym.attributed("data-id") {
-  | (_, Some(true)) => isTruthy(false, ~message="The data-id is still in the container and it was removed correctly.")
+  | (_, Some(true)) =>
+    isTruthy(false, ~message="The data-id is still in the container and it was removed correctly.")
   | (_, Some(false)) => isTruthy(true, ~message="The data-id was correctly removed.")
   | _ => isTruthy(false, ~message="The was a problem to test the Elym attributed function.")
   }
@@ -93,12 +100,8 @@ test("selectAll and selectChildren correctly select elements", () => {
   let selection = Elym.selectAll("div")
   switch selection {
   | Multiple(elements) =>
-    isTruthy(
-      elements->Array.length == 1,
-      ~message="selectAll correctly selects one div element.",
-    )
-  | _ =>
-    isTruthy(false, ~message="selectAll did not return the expected Multiple selection.")
+    isTruthy(elements->Array.length == 1, ~message="selectAll correctly selects one div element.")
+  | _ => isTruthy(false, ~message="selectAll did not return the expected Multiple selection.")
   }
 
   let childSelection = Elym.select(Selector("div"))->Elym.selectChildren("textarea")
@@ -108,31 +111,29 @@ test("selectAll and selectChildren correctly select elements", () => {
       elements->Array.length == 1,
       ~message="selectChildren correctly selects one textarea element.",
     )
-  | _ =>
-    isTruthy(false, ~message="selectChildren did not return the expected Multiple selection.")
+  | _ => isTruthy(false, ~message="selectChildren did not return the expected Multiple selection.")
   }
 
   container->teardown
 })
 
-// test("append correctly appends new elements", () => {
-//   let container = setup()
+test("append correctly appends new elements", () => {
+  let container = setup()
 
-//   let selection = Elym.select(Selector("div"))
-//   let updatedSelection = selection->Elym.append(Tag("span"))
+  let selection = Elym.select(Selector("div"))
+  let updatedSelection = selection->Elym.append(Tag("span"))
 
-//   switch updatedSelection {
-//   | Single(Some(el)) =>
-//     isTruthy(
-//       el->querySelector("span") != None,
-//       ~message="append correctly appended a new span element.",
-//     )
-//   | _ =>
-//     isTruthy(false, ~message="append did not return the expected updated selection.")
-//   }
+  switch updatedSelection {
+  | Single(Some(el)) =>
+    switch el->textContent {
+    | "" => isTruthy(true, ~message="append correctly appended a new span element.")
+    | _ => isTruthy(false, ~message="append did not append a new span element.")
+    }
+  | _ => isTruthy(false, ~message="append did not return the expected updated selection.")
+  }
 
-//   container->teardown
-// })
+  container->teardown
+})
 
 test("attr, classed, and style correctly manipulate attributes, classes, and styles", () => {
   let container = setup()
@@ -145,18 +146,15 @@ test("attr, classed, and style correctly manipulate attributes, classes, and sty
   switch attrValue {
   | Some(value) =>
     value->isTextEqualTo("test-value", ~message="attr correctly set the data-test attribute.")
-  | None =>
-    isTruthy(false, ~message="attr did not set the data-test attribute.")
+  | None => isTruthy(false, ~message="attr did not set the data-test attribute.")
   }
 
   // Test classed
   selection->Elym.classed("test-class", ~exists=true)->ignore
   let (_, hasClass) = selection->Elym.classed("test-class")
   switch hasClass {
-  | Some(true) =>
-    isTruthy(true, ~message="classed correctly added the test-class class.")
-  | _ =>
-    isTruthy(false, ~message="classed did not add the test-class class.")
+  | Some(true) => isTruthy(true, ~message="classed correctly added the test-class class.")
+  | _ => isTruthy(false, ~message="classed did not add the test-class class.")
   }
 
   // Test style
@@ -164,9 +162,8 @@ test("attr, classed, and style correctly manipulate attributes, classes, and sty
   let (_, styleValue) = selection->Elym.style("color")
   switch styleValue {
   | Some(value) =>
-    value->isTextEqualTo("red", ~message="style correctly set the color style.")
-  | None =>
-    isTruthy(false, ~message="style did not set the color style.")
+    value->isTextEqualTo("rgb(255, 0, 0)", ~message="style correctly set the color style.")
+  | None => isTruthy(false, ~message="style did not set the color style.")
   }
 
   container->teardown
@@ -180,9 +177,7 @@ test("remove correctly removes elements from the DOM", () => {
 
   let removedElement = Elym.select(Selector("div"))
   switch removedElement {
-  | Single(None) =>
-    isTruthy(true, ~message="remove correctly removed the element from the DOM.")
-  | _ =>
-    isTruthy(false, ~message="remove did not remove the element from the DOM.")
+  | Single(None) => isTruthy(true, ~message="remove correctly removed the element from the DOM.")
+  | _ => isTruthy(false, ~message="remove did not remove the element from the DOM.")
   }
 })
