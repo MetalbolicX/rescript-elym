@@ -181,3 +181,32 @@ test("remove correctly removes elements from the DOM", () => {
   | _ => isTruthy(false, ~message="remove did not remove the element from the DOM.")
   }
 })
+
+test("call and each correctly invoke functions on the selection", () => {
+  let container = setup()
+
+  let selection = Elym.select(Selector("div"))
+
+  // Test call
+  selection->Elym.call(sel => {
+    sel->Elym.attr("data-test", ~value="called")->ignore
+    sel
+  })->ignore
+
+  let (_, attrValue) = selection->Elym.attr("data-test")
+  switch attrValue {
+  | Some(value) =>
+    value->isTextEqualTo("called", ~message="call correctly invoked the function on the selection.")
+  | None =>
+    isTruthy(false, ~message="call did not invoke the function on the selection.")
+  }
+
+  // Test each
+  let count = ref(0)
+  selection->Elym.each((_, _) => {
+    count := count.contents + 1
+  })->ignore
+  isTruthy(count.contents == 1, ~message="each correctly invoked the function for each element.")
+
+  container->teardown
+})
