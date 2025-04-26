@@ -39,10 +39,9 @@ test("DOM element exists and check the id, textContent and data-id", () => {
 
   let selection = Elym.select(Selector("div"))
   switch selection {
-  | Single(Some(_)) => isTruthy(true, ~message="The container element exists in the DOM.")
-  | Single(None) => isTruthy(false, ~message="The container element does not exist in the DOM.")
-  | Multiple(_) =>
-    isTruthy(false, ~message="Elym select method is not capable of selecting multiple elements.")
+  | Single(Some(_)) => passWith("The container elemment exists in the DOM") //isTruthy(true, ~message="The container element exists in the DOM.")
+  | Single(None) => failWith("The container element does not exist in the DOM.")
+  | Multiple(_) => failWith("Elym select method is not capable of selecting multiple elements.")
   }
 
   let (_, id) = selection->Elym.attr("id")
@@ -62,11 +61,7 @@ test("DOM element exists and check the id, textContent and data-id", () => {
       "Hello Rescript test",
       ~message="The container text content is: Hello Rescript test.",
     )
-  | None =>
-    isTruthy(
-      false,
-      ~message="The container text content does not have the phrase 'Hello Rescript test'.",
-    )
+  | None => failWith("The container text content does not have the phrase 'Hello Rescript test'.")
   }
 
   let (withDataId, _) = selection->Elym.attr("data-id", ~value="abc")
@@ -77,18 +72,15 @@ test("DOM element exists and check the id, textContent and data-id", () => {
       ~message="The container data-id is 'abc'. It was correctly set using Elym.",
     )
   | (_, None) =>
-    isTruthy(
-      false,
-      ~message="The container data-id is not 'abc', it was not able to be set using Elym.",
-    )
+    failWith("The container data-id is not 'abc', it was not able to be set using Elym.")
   }
 
   let (withoutDataId, _) = withDataId->Elym.attributed("data-id", ~exists=false)
   switch withoutDataId->Elym.attributed("data-id") {
   | (_, Some(true)) =>
-    isTruthy(false, ~message="The data-id is still in the container and it was removed correctly.")
-  | (_, Some(false)) => isTruthy(true, ~message="The data-id was correctly removed.")
-  | _ => isTruthy(false, ~message="The was a problem to test the Elym attributed function.")
+    failWith("The data-id is still in the container and it was removed correctly.")
+  | (_, Some(false)) => passWith("The data-id was correctly removed.")
+  | _ => failWith("The was a problem to test the Elym attributed function.")
   }
 
   container->teardown
@@ -100,18 +92,19 @@ test("selectAll and selectChildren correctly select elements", () => {
   let selection = Elym.selectAll("div")
   switch selection {
   | Multiple(elements) =>
-    isTruthy(elements->Array.length == 1, ~message="selectAll correctly selects one div element.")
-  | _ => isTruthy(false, ~message="selectAll did not return the expected Multiple selection.")
+    isIntEqualTo(elements->Array.length, 1, ~message="selectAll correctly selects one div element.")
+  | _ => failWith("selectAll did not return the expected Multiple selection.")
   }
 
   let childSelection = Elym.select(Selector("div"))->Elym.selectChildren("textarea")
   switch childSelection {
   | Multiple(elements) =>
-    isTruthy(
-      elements->Array.length == 1,
+    isIntEqualTo(
+      elements->Array.length,
+      1,
       ~message="selectChildren correctly selects one textarea element.",
     )
-  | _ => isTruthy(false, ~message="selectChildren did not return the expected Multiple selection.")
+  | _ => failWith("selectChildren did not return the expected Multiple selection.")
   }
 
   container->teardown
@@ -125,11 +118,8 @@ test("append correctly appends new elements", () => {
 
   switch updatedSelection {
   | Single(Some(el)) =>
-    switch el->textContent {
-    | "" => isTruthy(true, ~message="append correctly appended a new span element.")
-    | _ => isTruthy(false, ~message="append did not append a new span element.")
-    }
-  | _ => isTruthy(false, ~message="append did not return the expected updated selection.")
+    isTextEqualTo(el->textContent, "", ~message="append correctly appends a new span element.")
+  | _ => failWith("append did not return the expected updated selection.")
   }
 
   container->teardown
@@ -146,15 +136,15 @@ test("attr, classed, and style correctly manipulate attributes, classes, and sty
   switch attrValue {
   | Some(value) =>
     value->isTextEqualTo("test-value", ~message="attr correctly set the data-test attribute.")
-  | None => isTruthy(false, ~message="attr did not set the data-test attribute.")
+  | None => failWith("attr did not set the data-test attribute.")
   }
 
   // Test classed
   selection->Elym.classed("test-class", ~exists=true)->ignore
   let (_, hasClass) = selection->Elym.classed("test-class")
   switch hasClass {
-  | Some(true) => isTruthy(true, ~message="classed correctly added the test-class class.")
-  | _ => isTruthy(false, ~message="classed did not add the test-class class.")
+  | Some(true) => passWith("classed correctly added the test-class class.")
+  | _ => failWith("classed did not add the test-class class.")
   }
 
   // Test style
@@ -163,7 +153,7 @@ test("attr, classed, and style correctly manipulate attributes, classes, and sty
   switch styleValue {
   | Some(value) =>
     value->isTextEqualTo("rgb(255, 0, 0)", ~message="style correctly set the color style.")
-  | None => isTruthy(false, ~message="style did not set the color style.")
+  | None => failWith("style did not set the color style.")
   }
 
   container->teardown
@@ -177,8 +167,8 @@ test("remove correctly removes elements from the DOM", () => {
 
   let removedElement = Elym.select(Selector("div"))
   switch removedElement {
-  | Single(None) => isTruthy(true, ~message="remove correctly removed the element from the DOM.")
-  | _ => isTruthy(false, ~message="remove did not remove the element from the DOM.")
+  | Single(None) => passWith("remove correctly removed the element from the DOM.")
+  | _ => failWith("remove did not remove the element from the DOM.")
   }
 })
 
@@ -188,25 +178,28 @@ test("call and each correctly invoke functions on the selection", () => {
   let selection = Elym.select(Selector("div"))
 
   // Test call
-  selection->Elym.call(sel => {
+  selection
+  ->Elym.call(sel => {
     sel->Elym.attr("data-test", ~value="called")->ignore
     sel
-  })->ignore
+  })
+  ->ignore
 
   let (_, attrValue) = selection->Elym.attr("data-test")
   switch attrValue {
   | Some(value) =>
     value->isTextEqualTo("called", ~message="call correctly invoked the function on the selection.")
-  | None =>
-    isTruthy(false, ~message="call did not invoke the function on the selection.")
+  | None => failWith("call did not invoke the function on the selection.")
   }
 
   // Test each
   let count = ref(0)
-  selection->Elym.each((_, _) => {
+  selection
+  ->Elym.each((_, _) => {
     count := count.contents + 1
-  })->ignore
-  isTruthy(count.contents == 1, ~message="each correctly invoked the function for each element.")
+  })
+  ->ignore
+  count.contents->isIntEqualTo(1, ~message="each correctly invoked the function for each element.")
 
   container->teardown
 })
