@@ -87,106 +87,102 @@ test("DOM element exists and check the id, textContent and data-id", () => {
   container->teardown
 })
 
-// test("Check the class attribute API that add, removes, toggles, etc.", () => {
+test("selectAll and selectChildren correctly select elements", () => {
+  let container = setup()
+
+  let selection = Elym.selectAll("div")
+  switch selection {
+  | Multiple(elements) =>
+    isTruthy(
+      elements->Array.length == 1,
+      ~message="selectAll correctly selects one div element.",
+    )
+  | _ =>
+    isTruthy(false, ~message="selectAll did not return the expected Multiple selection.")
+  }
+
+  let childSelection = Elym.select(Selector("div"))->Elym.selectChildren("textarea")
+  switch childSelection {
+  | Multiple(elements) =>
+    isTruthy(
+      elements->Array.length == 1,
+      ~message="selectChildren correctly selects one textarea element.",
+    )
+  | _ =>
+    isTruthy(false, ~message="selectChildren did not return the expected Multiple selection.")
+  }
+
+  container->teardown
+})
+
+// test("append correctly appends new elements", () => {
 //   let container = setup()
 
-//   let selection = Elym.select("div")
+//   let selection = Elym.select(Selector("div"))
+//   let updatedSelection = selection->Elym.append(Tag("span"))
 
-//   let hasClassHello = selection->Elym.isClassed("hello")
-//   switch hasClassHello {
-//   | Some(t) => {
-//       isTruthy(!t, ~message="The container does not have the class 'hello'.")
-//       selection->Elym.addClass(["hello"])->ignore
-//     }
-//   | None =>
+//   switch updatedSelection {
+//   | Single(Some(el)) =>
 //     isTruthy(
-//       false,
-//       ~message="The container does not have the class 'hello' and the result is None.",
+//       el->querySelector("span") != None,
+//       ~message="append correctly appended a new span element.",
 //     )
-//   }
-
-//   let wasHelloClassAdded = selection->Elym.isClassed("hello")
-//   switch wasHelloClassAdded {
-//   | Some(t) =>
-//     isTruthy(
-//       t,
-//       ~message="The container has the class 'hello' and it was correctly added using Elym addClass.",
-//     )
-//   | None =>
-//     isTruthy(false, ~message="The container was not able to be added using Elym addClass function.")
-//   }
-
-//   selection->Elym.toggleClass("visible")->ignore
-//   let isVisible = selection->Elym.isClassed("visible")
-//   switch isVisible {
-//   | Some(t) =>
-//     isTruthy(
-//       t,
-//       ~message="The container has the visible class, it was added using the Elym toogleClass function",
-//     )
-//   | None =>
-//     isTruthy(
-//       false,
-//       ~message="The container, visible class was not added using the Elym toogleClass function",
-//     )
-//   }
-
-//   selection->Elym.replaceClass("visible", "hidden")->ignore
-//   let wasReplaced = selection->Elym.isClassed("hidden")
-//   switch wasReplaced {
-//   | Some(t) =>
-//     isTruthy(t, ~message="The container 'visible' class was replaced for the class 'hidden'")
-//   | None =>
-//     isTruthy(
-//       false,
-//       ~message="The container 'visible' class was not replaced for the class 'hidden'",
-//     )
+//   | _ =>
+//     isTruthy(false, ~message="append did not return the expected updated selection.")
 //   }
 
 //   container->teardown
 // })
 
-// test("Check the properties of css and special ones of some Html tags", () => {
-//   let container = setup()
+test("attr, classed, and style correctly manipulate attributes, classes, and styles", () => {
+  let container = setup()
 
-//   let selection = Elym.select("div")
+  let selection = Elym.select(Selector("div"))
 
-//   let color = selection->Elym.getCssProperty("color")
-//   switch color {
-//   | Some(c) =>
-//     c->isTextEqualTo(
-//       "",
-//       ~message="The container does not have the property of 'color', it is an empty string",
-//     )
-//   | None => isTruthy(false, ~message="The container property of color is None")
-//   }
+  // Test attr
+  selection->Elym.attr("data-test", ~value="test-value")->ignore
+  let (_, attrValue) = selection->Elym.attr("data-test")
+  switch attrValue {
+  | Some(value) =>
+    value->isTextEqualTo("test-value", ~message="attr correctly set the data-test attribute.")
+  | None =>
+    isTruthy(false, ~message="attr did not set the data-test attribute.")
+  }
 
-//   let textArea = selection->Elym.selectChild("textarea")
-//   switch textArea {
-//   | Single(Some(_)) => isTruthy(true, ~message="The container has child of textarea.")
-//   | Single(None) => isTruthy(false, ~message="The container does not have the child textarea.")
-//   | Multiple(_) =>
-//     isTruthy(false, ~message="The Elym selectChild can only get one element at a time.")
-//   }
+  // Test classed
+  selection->Elym.classed("test-class", ~exists=true)->ignore
+  let (_, hasClass) = selection->Elym.classed("test-class")
+  switch hasClass {
+  | Some(true) =>
+    isTruthy(true, ~message="classed correctly added the test-class class.")
+  | _ =>
+    isTruthy(false, ~message="classed did not add the test-class class.")
+  }
 
-//   let text = textArea->Elym.getValue
-//   switch text {
-//     | Some(txt) => txt->isTextEqualTo("", ~message="The textarea input value is an empty string.")
-//     | None => isTruthy(false, ~message="The textarea input value is None")
-//   }
+  // Test style
+  selection->Elym.style("color", ~value="red")->ignore
+  let (_, styleValue) = selection->Elym.style("color")
+  switch styleValue {
+  | Some(value) =>
+    value->isTextEqualTo("red", ~message="style correctly set the color style.")
+  | None =>
+    isTruthy(false, ~message="style did not set the color style.")
+  }
 
-//   textArea->Elym.setValue("Hello world!")->ignore
-//   let newText = textArea->Elym.getValue
-//   switch newText {
-//     | Some(txt) => txt->isTextEqualTo("Hello world!", ~message="The textarea input value is 'Hello world!'")
-//     | None => isTruthy(false, ~message="The textarea input value is None")
-//   }
+  container->teardown
+})
 
-//   textArea->Elym.toggleAttr("readonly")->ignore
-//   switch textArea->Elym.hasAttr("readonly") {
-//     | Some(t) => isTruthy(t, ~message="The textares has the attribute readonly, added using Elym toggleAttr function.")
-//     | None => isTruthy(false, ~message="The textarea is None")
-//   }
+test("remove correctly removes elements from the DOM", () => {
+  setup()->ignore
 
-//   container->teardown
-// })
+  let selection = Elym.select(Selector("div"))
+  selection->Elym.remove->ignore
+
+  let removedElement = Elym.select(Selector("div"))
+  switch removedElement {
+  | Single(None) =>
+    isTruthy(true, ~message="remove correctly removed the element from the DOM.")
+  | _ =>
+    isTruthy(false, ~message="remove did not remove the element from the DOM.")
+  }
+})
