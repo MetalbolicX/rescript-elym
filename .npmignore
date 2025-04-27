@@ -6,7 +6,7 @@
 /dist/
 .qodo
 /src/**/*.res.mjs
-/src/Index.res.js
+/src/Index.res
 /test/
 *.prompt.md
 index.html
