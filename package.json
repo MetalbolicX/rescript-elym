@@ -1,6 +1,6 @@
 {
   "name": "rescript-elym",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "scripts": {
     "build": "bun build ./src/Index.res.mjs --outdir ./dist --format esm",
     "res:build": "rescript",
