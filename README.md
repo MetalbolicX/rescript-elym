@@ -139,8 +139,6 @@ Elym.select(Selector("#button"))
 
 ## Usage Example: Todo Application
 
-### Requirements
-
 This example demonstrates how to build a simple todo application with Elym.
 
 ### HTML Structure
