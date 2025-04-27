@@ -2,7 +2,7 @@
   "name": "rescript-elym",
   "version": "1.0.0",
   "scripts": {
-    "build": "rescript build && bun build ./src/Index.res.mjs --outdir ./dist --format esm",
+    "build": "bun build ./src/Index.res.mjs --outdir ./dist --format esm",
     "res:build": "rescript",
     "res:clean": "rescript clean",
     "res:dev": "rescript -w",
