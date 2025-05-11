@@ -272,7 +272,7 @@ formButtonAddTodo
 ->Elym.on("click", _ => {
   // Get input value
   switch formTodoInput->Elym.property("value") {
-  | (_, Some(Str(txt))) => {
+  | (_, Some(String(txt))) => {
       // Create and append new task
       let task = createTask(txt)
       switch task {

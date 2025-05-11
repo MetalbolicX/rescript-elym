@@ -246,3 +246,49 @@ test("on and off correctly add and remove event listeners", () => {
 
   container->teardown
 })
+
+testAsync("onAsync correctly adds and removes asynchronous event listeners", (done) => {
+  let container = setup()
+
+  let selection = Elym.select(Selector("div"))
+  let isClicked = ref(false)
+
+  // Add asynchronous event listener
+  selection
+  ->Elym.onAsync("click", async _ => {
+    await Js.Promise.resolve()
+    isClicked := true
+  })
+  ->ignore
+
+  switch selection {
+  | Single(Some(el)) => {
+      // Create and dispatch a click event
+      let clickEvent = createEvent("Event")
+      clickEvent->initEvent("click", true, true)
+      el->dispatchEvent(clickEvent)
+
+      // Wait for the promise to resolve
+      // await Js.Promise.resolve()
+
+      // Verify the listener was triggered
+      isClicked.contents->isTruthy(~message="onAsync correctly added the click event listener.")
+
+      // Remove the event listener
+      selection->Elym.off("click")->ignore
+      isClicked := false
+
+      // Dispatch another click event
+      el->dispatchEvent(clickEvent)
+
+      // Verify the listener was removed
+      // isClicked.contents->isFalsy(~message="onAsync correctly removed the click event listener.")
+      !isClicked.contents->isTruthy(~message="onAsync correctly removed the click event listener.")
+    }
+  | Single(None) => failWith("Expected a single element.")
+  | Multiple(_) => failWith("Elym select method is not capable of selecting multiple elements.")
+  }
+
+  container->teardown
+  done()
+})

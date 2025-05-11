@@ -65,7 +65,7 @@ formTodoInput
 formButtonAddTodo
 ->Elym.on("click", _ => {
   switch formTodoInput->Elym.property("value") {
-  | (_, Some(Str(txt))) => {
+  | (_, Some(String(txt))) => {
       let task = createTask(txt)
       switch task {
       | Some(el) => todoList->Elym.append(Dom(el))->ignore

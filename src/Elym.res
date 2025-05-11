@@ -108,7 +108,7 @@ external toArray: Dom.nodeList => array<Dom.element> = "from"
  */
 @unboxed
 type propertyValue =
-  | Str(string)
+  | String(string)
   | Number(float)
   | Boolean(bool)
 
@@ -451,7 +451,7 @@ let property: (selection, string, ~value: propertyValue=?) => (selection, option
   let getValue: Dom.element => option<propertyValue> = el => {
     let rawValue = el->Obj.magic->Dict.get(propName)->Option.getExn
     switch Type.typeof(rawValue) {
-    | #string => rawValue->Obj.magic->Str->Some
+    | #string => rawValue->Obj.magic->String->Some
     // | "number" =>
     //   if Float.isInt(Obj.magic(rawValue)) {
     //     Some(Int(Obj.magic(rawValue)))
@@ -466,7 +466,7 @@ let property: (selection, string, ~value: propertyValue=?) => (selection, option
 
   let setValue: (Dom.element, propertyValue) => Dict.t<'a> = (el, v) => {
     let value = switch v {
-    | Str(s) => Obj.magic(s)
+    | String(s) => Obj.magic(s)
     | Number(f) => Obj.magic(f)
     | Boolean(b) => Obj.magic(b)
     }
@@ -627,6 +627,50 @@ let on: (selection, string, Dom.event => unit) => selection = (selection, eventT
   switch selection {
   | Single(Some(el)) => addListener(el)
   | Single(None) => Console.error("Elym: on - Single element is None.")
+  | Multiple(elements) => elements->Array.forEach(addListener)
+  }
+  selection
+}
+
+/**
+ * Adds an asynchronous event listener to the selected element(s).
+ * @param {selection} selection - The current selection.
+ * @param {string} eventType - The type of event to listen for.
+ * @param {Dom.event => promise<unit>} callback - The asynchronous callback function to execute when the event occurs.
+ * @return {selection} - The updated selection.
+ * @example
+ * ```res
+ * select(Selector("#myButton"))->onAsync("click", async _ => {
+ *   await Js.Promise.resolve()
+ *   Console.log("Button clicked!")
+ * })->ignore
+ * ```
+ */
+let onAsync: (selection, string, Dom.event => promise<unit>) => selection = (selection, eventType, callback) => {
+  let addListener = el => {
+    let id = randomUUID()
+    let listenersForElement = switch WeakMap.get(listeners, el) {
+    | Some(dict) => dict
+    | None => {
+        let newDict = Dict.make()
+        WeakMap.set(listeners, el, newDict)->ignore
+        newDict
+      }
+    }
+    let listenersForEvent = switch Dict.get(listenersForElement, eventType) {
+    | Some(arr) => arr
+    | None => []
+    }
+    let asyncWrapper = (event: Dom.event) => {
+      callback(event)->ignore // Execute the promise but ignore its result
+    }
+    Dict.set(listenersForElement, eventType, [(id, asyncWrapper), ...listenersForEvent])
+    el->addEventListener(eventType, asyncWrapper)
+  }
+
+  switch selection {
+  | Single(Some(el)) => addListener(el)
+  | Single(None) => Console.error("Elym: onAsync - Single element is None.")
   | Multiple(elements) => elements->Array.forEach(addListener)
   }
   selection
