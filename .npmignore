@@ -11,3 +11,7 @@
 index.html
 styles.css
 /example/
+/docs/
+/.vscode/
+docs/.vitepress/dist
+docs/.vitepress/cache

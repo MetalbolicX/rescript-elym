@@ -7,3 +7,5 @@
 .qodo
 /**/*.res.mjs
 *.prompt.md
+docs/.vitepress/dist
+docs/.vitepress/cache

@@ -10,7 +10,7 @@ Many developers are eager to try ReScript, but often find themselves spending mo
 * **Fluent API**: Chain methods for concise, readable code.
 * **Type Safety**: Leverage ReScript's type system to catch errors at compile time.
 * **Event Management**: Automatic cleanup of event listeners when elements are removed.
-* **Familiar Pattern**: If you're familiar with D3.js selections, you'll feel right at home.
+* **Familiar Pattern**: If you're familiar with d3.js selections, you'll feel right at home.
 
 ## Installation
 
