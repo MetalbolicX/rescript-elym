@@ -2,7 +2,8 @@
 
 ## Description
 
-Elym (short for "element manipulator") provides ReScript bindings for DOM manipulation with a syntax inspired by [D3.js's selection module](https://github.com/d3/d3-selection). It simplifies DOM operations while maintaining the type safety and expressiveness of ReScript.
+Elym (short for "element manipulator") provides ReScript v11 bindings for DOM manipulation using the syntax inspired by [d3.js selection module](https://github.com/d3/d3-selection).
+Many developers are eager to try ReScript, but often find themselves spending more time writing external bindings for JavaScript than building their actual applications. Elym solves this problem for front-end web development by providing a fluent, type-safe API for selecting, manipulating, and managing DOM elements—so you can focus on building great apps, no more manual boring typing code.
 
 ## Why Elym?
 

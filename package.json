@@ -19,6 +19,9 @@
     "type": "git",
     "url": "https://github.com/MetalbolicX/rescript-elym.git"
   },
+  "bugs": {
+    "url": "https://github.com/MetalbolicX/rescript-elym/issues"
+  },
   "license": "MIT",
   "dependencies": {
     "@rescript/core": "1.6.1",
