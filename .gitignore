@@ -5,6 +5,5 @@
 .merlin
 /dist/
 .qodo
-/src/**/*.res.mjs
-/test/**/*.res.mjs
+/**/*.res.mjs
 *.prompt.md

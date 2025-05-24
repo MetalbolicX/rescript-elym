@@ -1,12 +1,13 @@
 {
   "name": "rescript-elym",
+  "description": "A ReScript v11 library for creating and manipulating HTML elements using a syntax similar to d3.js or jQuery.",
   "version": "1.1.0",
   "scripts": {
-    "build": "bun build ./src/Index.res.mjs --outdir ./dist --format esm",
+    "rd:build": "rolldown ./example/Index.res.mjs --file ./dist/main.js --format es",
     "res:build": "rescript",
     "res:clean": "rescript clean",
     "res:dev": "rescript -w",
-    "test": "retest --with-dom test/**/*.mjs"
+    "res:test": "retest --with-dom test/**/*.mjs"
   },
   "keywords": [
     "rescript"
@@ -15,8 +16,8 @@
     "name": "José Martínez Santana"
   },
   "repository": {
-    "type": "GitHub",
-    "url": "https://github.com/MetalbolicX/rescript-elym"
+    "type": "git",
+    "url": "https://github.com/MetalbolicX/rescript-elym.git"
   },
   "license": "MIT",
   "dependencies": {
@@ -24,6 +25,7 @@
     "rescript": "11.1.4"
   },
   "devDependencies": {
-    "rescript-test": "^7.0.1"
+    "rescript-test": "^7.0.1",
+    "rolldown": "^1.0.0-beta.9"
   }
 }
