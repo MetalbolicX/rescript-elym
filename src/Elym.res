@@ -45,8 +45,6 @@ external docQuerySelectorAll: string => Dom.nodeList = "querySelectorAll"
 @send external querySelectorAll: (Dom.element, string) => Dom.nodeList = "querySelectorAll"
 // @get external nodeListLength: Dom.nodeList => int = "length"
 // @send external item: (Dom.nodeList, int) => Nullable.t<Dom.element> = "item"
-// @val @scope("Array")
-// external toArray: Dom.nodeList => array<Dom.element> = "from"
 // Attributes
 @send external setAttribute: (Dom.element, string, string) => unit = "setAttribute"
 @send @return(nullable)
@@ -155,19 +153,10 @@ let select: selector => selection = selector => {
  */
 let selectAll: string => selection = selector => {
   let elements = selector->docQuerySelectorAll->toArray
-  if elements->Array.length == 0 {
-    Multiple([])
-  } else {
-    Multiple(elements)
+  switch elements {
+    | [] => Multiple([])
+    | _ => Multiple(elements)
   }
-
-  // if length == 0 {
-  //   Multiple([])
-  // } else {
-  //   let indices = Array.fromInitializer(~length, i => i)
-  //   let elements = indices->Array.map(i => Nullable.getExn(nodes->item(i)))
-  //   Multiple(elements)
-  // }
 }
 
 /**
@@ -198,51 +187,20 @@ let selectChild: (selection, string) => selection = (selection, selector) => {
  * @return {selection} - The selected child elements.
  */
 let selectChildren: (selection, string) => selection = (selection, selector) => {
-  // switch selection {
-  // | Single(Some(element)) =>
-  //   let nodeList = element->querySelectorAll(selector)
-  //   let length = nodeListLength(nodeList)
-
-  //   if length == 0 {
-  //     Multiple([])
-  //   } else {
-  //     let indices = Array.fromInitializer(~length, i => i)
-  //     let elements = indices->Array.map(i => Nullable.getExn(nodeList->item(i)))
-  //     Multiple(elements)
-  //   }
-  // | Single(None) => Multiple([])
-  // | Multiple(elements) =>
-  //   let allMatches = elements->Array.reduce([], (acc, el) => {
-  //     let nodeList = el->querySelectorAll(selector)
-  //     let length = nodeListLength(nodeList)
-
-  //     if length == 0 {
-  //       acc
-  //     } else {
-  //       let indices = Array.fromInitializer(~length, i => i)
-  //       let matches = indices->Array.map(i => Nullable.getExn(nodeList->item(i)))
-  //       // Array.concat(acc, matches)
-  //       [...acc, ...matches]
-  //     }
-  //   })
-  //   Multiple(allMatches)
-  // }
   switch selection {
     | Single(Some(element)) =>
       let elements = element->querySelectorAll(selector)->toArray
-      if elements->Array.length == 0 {
-        Multiple([])
-      } else {
-        Multiple(elements)
+      switch elements {
+      | [] => Multiple([])
+      | _ => Multiple(elements)
       }
     | Single(None) => Multiple([])
     | Multiple(elements) =>
       let allMatches = elements->Array.reduce([], (acc, el) => {
         let matches = el->querySelectorAll(selector)->toArray
-        if matches->Array.length == 0 {
-          acc
-        } else {
-          [...acc, ...matches]
+        switch matches {
+        | [] => acc
+        | _ => [...acc, ...matches]
         }
       })
       Multiple(allMatches)
@@ -830,36 +788,6 @@ let appendChildren: (selection, array<Dom.element>) => selection = (selection, c
     Multiple(newElements)
   }
 }
-
-// /**
-//  * Removes the selected element(s) from the DOM.
-//  * @param {selection} selection - The selection to remove.
-//  * @example
-//  * ```res
-//  * select(Selector("#myButton"))->remove
-//  * ```
-//  */
-// let remove: selection => unit = selection => {
-//   let removeSingleElement = el => {
-//     // Remove all event listeners
-//     switch WeakMap.get(listeners, el) {
-//     | Some(dict) =>
-//       dict->Dict.keysToArray->Array.forEach(eventType => {
-//         off(Single(Some(el)), eventType)->ignore
-//       })
-//     | None => ()
-//     }
-
-//     // Remove the element from the DOM
-//     el->removeElement
-//   }
-
-//   switch selection {
-//   | Single(Some(el)) => removeSingleElement(el)
-//   | Single(None) => Console.error("Elym: remove - Single element is None.")
-//   | Multiple(elements) => elements->Array.forEach(removeSingleElement)
-//   }
-// }
 
 /**
  * Invokes the specified function exactly once, passing in this selection.
