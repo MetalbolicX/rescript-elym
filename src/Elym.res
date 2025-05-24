@@ -43,9 +43,10 @@ external querySelector: (Dom.element, string) => option<Dom.element> = "querySel
 @val @scope("document")
 external docQuerySelectorAll: string => Dom.nodeList = "querySelectorAll"
 @send external querySelectorAll: (Dom.element, string) => Dom.nodeList = "querySelectorAll"
-@get external nodeListLength: Dom.nodeList => int = "length"
-@send external item: (Dom.nodeList, int) => Nullable.t<Dom.element> = "item"
-
+// @get external nodeListLength: Dom.nodeList => int = "length"
+// @send external item: (Dom.nodeList, int) => Nullable.t<Dom.element> = "item"
+// @val @scope("Array")
+// external toArray: Dom.nodeList => array<Dom.element> = "from"
 // Attributes
 @send external setAttribute: (Dom.element, string, string) => unit = "setAttribute"
 @send @return(nullable)
@@ -153,16 +154,20 @@ let select: selector => selection = selector => {
  * ```
  */
 let selectAll: string => selection = selector => {
-  let nodes = selector->docQuerySelectorAll
-  let length = nodeListLength(nodes)
-
-  if length == 0 {
+  let elements = selector->docQuerySelectorAll->toArray
+  if elements->Array.length == 0 {
     Multiple([])
   } else {
-    let indices = Array.fromInitializer(~length, i => i)
-    let elements = indices->Array.map(i => Nullable.getExn(nodes->item(i)))
     Multiple(elements)
   }
+
+  // if length == 0 {
+  //   Multiple([])
+  // } else {
+  //   let indices = Array.fromInitializer(~length, i => i)
+  //   let elements = indices->Array.map(i => Nullable.getExn(nodes->item(i)))
+  //   Multiple(elements)
+  // }
 }
 
 /**
@@ -193,34 +198,54 @@ let selectChild: (selection, string) => selection = (selection, selector) => {
  * @return {selection} - The selected child elements.
  */
 let selectChildren: (selection, string) => selection = (selection, selector) => {
+  // switch selection {
+  // | Single(Some(element)) =>
+  //   let nodeList = element->querySelectorAll(selector)
+  //   let length = nodeListLength(nodeList)
+
+  //   if length == 0 {
+  //     Multiple([])
+  //   } else {
+  //     let indices = Array.fromInitializer(~length, i => i)
+  //     let elements = indices->Array.map(i => Nullable.getExn(nodeList->item(i)))
+  //     Multiple(elements)
+  //   }
+  // | Single(None) => Multiple([])
+  // | Multiple(elements) =>
+  //   let allMatches = elements->Array.reduce([], (acc, el) => {
+  //     let nodeList = el->querySelectorAll(selector)
+  //     let length = nodeListLength(nodeList)
+
+  //     if length == 0 {
+  //       acc
+  //     } else {
+  //       let indices = Array.fromInitializer(~length, i => i)
+  //       let matches = indices->Array.map(i => Nullable.getExn(nodeList->item(i)))
+  //       // Array.concat(acc, matches)
+  //       [...acc, ...matches]
+  //     }
+  //   })
+  //   Multiple(allMatches)
+  // }
   switch selection {
-  | Single(Some(element)) =>
-    let nodeList = element->querySelectorAll(selector)
-    let length = nodeListLength(nodeList)
-
-    if length == 0 {
-      Multiple([])
-    } else {
-      let indices = Array.fromInitializer(~length, i => i)
-      let elements = indices->Array.map(i => Nullable.getExn(nodeList->item(i)))
-      Multiple(elements)
-    }
-  | Single(None) => Multiple([])
-  | Multiple(elements) =>
-    let allMatches = elements->Array.reduce([], (acc, el) => {
-      let nodeList = el->querySelectorAll(selector)
-      let length = nodeListLength(nodeList)
-
-      if length == 0 {
-        acc
+    | Single(Some(element)) =>
+      let elements = element->querySelectorAll(selector)->toArray
+      if elements->Array.length == 0 {
+        Multiple([])
       } else {
-        let indices = Array.fromInitializer(~length, i => i)
-        let matches = indices->Array.map(i => Nullable.getExn(nodeList->item(i)))
-        // Array.concat(acc, matches)
-        [...acc, ...matches]
+        Multiple(elements)
       }
-    })
-    Multiple(allMatches)
+    | Single(None) => Multiple([])
+    | Multiple(elements) =>
+      let allMatches = elements->Array.reduce([], (acc, el) => {
+        let matches = el->querySelectorAll(selector)->toArray
+        if matches->Array.length == 0 {
+          acc
+        } else {
+          [...acc, ...matches]
+        }
+      })
+      Multiple(allMatches)
   }
 }
 
