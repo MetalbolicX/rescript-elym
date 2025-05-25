@@ -19,6 +19,13 @@ type selector =
   | Dom(Dom.element)
 
 /**
+ * Represents a selector for the case of multiple elements.
+ */
+type selectors =
+  | Selector(string)
+  | List(Dom.nodeList)
+
+/**
  * Represents a the element to added in the DOM.
  */
 type element =
@@ -143,19 +150,21 @@ let select: selector => selection = selector => {
 }
 
 /**
- * Selects multiple elements based on the given Css selector .
- * @param {string} selector - The selector to use.
+ * Selects multiple elements based on the given selector at document level.
+ * @param {selectors} selector - The selector to use.
  * @return {selection} - The selected elements.
  * @example
  * ```res
- * let items = Elym.selectAll("li")
+ * // Using a css selector
+ * let containers = Elym.selectAll(Selector(".container"))
+ * // or use pass a Dom element, assuming list is an element
+ * let lists = Elym.selectAll(List(list))
  * ```
  */
-let selectAll: string => selection = selector => {
-  let elements = selector->docQuerySelectorAll->toArray
-  switch elements {
-    | [] => Many([])
-    | _ => Many(elements)
+let selectAll: selectors => selection = selector => {
+  switch selector {
+  | Selector(str) => Many(str->docQuerySelectorAll->toArray)
+  | List(elements) => Many(elements->toArray)
   }
 }
 

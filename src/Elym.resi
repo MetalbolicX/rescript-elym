@@ -13,6 +13,13 @@ type selector =
   | Dom(Dom.element)
 
 /**
+ * Represents a selector for the case of multiple elements.
+ */
+type selectors =
+  | Selector(string)
+  | List(Dom.nodeList)
+
+/**
  * Represents the element to be added in the DOM.
  */
 type element =
@@ -168,11 +175,11 @@ let replaceClass: (selection, string, string) => selection
 let select: selector => selection
 
 /**
- * Selects multiple elements based on the given CSS selector.
- * @param {string} selector - The selector to use.
+ * Selects multiple elements based on the given selector at document level.
+ * @param {selectors} selectors - The selector to use.
  * @return {selection} - The selected elements.
  */
-let selectAll: string => selection
+let selectAll: selectors => selection
 
 /**
  * Selects a child element from the current selection.

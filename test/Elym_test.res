@@ -94,7 +94,7 @@ test("DOM element exists and check the id, textContent and data-id", () => {
 test("selectAll and selectChildren correctly select elements", () => {
   let container = setup()
 
-  let selection = Elym.selectAll("div")
+  let selection = Elym.selectAll(Selector("div"))
   switch selection {
   | Many(elements) =>
     isIntEqualTo(elements->Array.length, 1, ~message="selectAll correctly selects one div element.")
