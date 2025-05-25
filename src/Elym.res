@@ -3,7 +3,7 @@
  */
 type selection =
   | Single(option<Dom.element>)
-  | Multiple(array<Dom.element>)
+  | Many(array<Dom.element>)
 
 /**
  * A map to store event listeners for DOM elements.
@@ -154,8 +154,8 @@ let select: selector => selection = selector => {
 let selectAll: string => selection = selector => {
   let elements = selector->docQuerySelectorAll->toArray
   switch elements {
-    | [] => Multiple([])
-    | _ => Multiple(elements)
+    | [] => Many([])
+    | _ => Many(elements)
   }
 }
 
@@ -169,10 +169,10 @@ let selectChild: (selection, string) => selection = (selection, selector) => {
   switch selection {
   | Single(Some(element)) => Single(element->querySelector(selector))
   | Single(None) => Single(None)
-  | Multiple(elements) =>
-    let firstMatch = elements->Array.reduce(None, (acc, el) => {
-      switch acc {
-      | Some(_) => acc // Already found a match
+  | Many(elements) =>
+    let firstMatch = elements->Array.reduce(None, (first, el) => {
+      switch first {
+      | Some(_) => first // Already found a match
       | None => el->querySelector(selector)
       }
     })
@@ -191,19 +191,19 @@ let selectChildren: (selection, string) => selection = (selection, selector) => 
     | Single(Some(element)) =>
       let elements = element->querySelectorAll(selector)->toArray
       switch elements {
-      | [] => Multiple([])
-      | _ => Multiple(elements)
+      | [] => Many([])
+      | _ => Many(elements)
       }
-    | Single(None) => Multiple([])
-    | Multiple(elements) =>
-      let allMatches = elements->Array.reduce([], (acc, el) => {
+    | Single(None) => Many([])
+    | Many(elements) =>
+      let allMatches = elements->Array.reduce([], (list, el) => {
         let matches = el->querySelectorAll(selector)->toArray
         switch matches {
-        | [] => acc
-        | _ => [...acc, ...matches]
+        | [] => list
+        | _ => [...list, ...matches]
         }
       })
-      Multiple(allMatches)
+      Many(allMatches)
   }
 }
 
@@ -229,10 +229,10 @@ let text: (selection, ~content: string=?) => (selection, option<string>) = (sele
   | (Single(None), _) =>
     Console.error("Elym: text - Single element is None.")
     None
-  | (Multiple(elements), Some(text)) =>
+  | (Many(elements), Some(text)) =>
     elements->Array.forEach(el => el->setTextContent(text))
     None
-  | (Multiple(_), None) =>
+  | (Many(_), None) =>
     Console.error("Elym: text - getter not supported on multiple elements.")
     None
   }
@@ -270,10 +270,10 @@ let html: (selection, ~content: string=?) => (selection, option<string>) = (sele
   | (Single(None), _) =>
     Console.error("Elym: html - Single element is None.")
     None
-  | (Multiple(elements), Some(htmlContent)) =>
+  | (Many(elements), Some(htmlContent)) =>
     elements->Array.forEach(el => el->setHtml(htmlContent))
     None
-  | (Multiple(_), None) =>
+  | (Many(_), None) =>
     Console.error("Elym: html - getter not supported on multiple elements.")
     None
   }
@@ -302,10 +302,10 @@ let attr: (selection, string, ~value: string=?) => (selection, option<string>) =
   | (Single(None), _) =>
     Console.error("Elym: attr - Single element is None.")
     None
-  | (Multiple(elements), Some(v)) =>
+  | (Many(elements), Some(v)) =>
     elements->Array.forEach(el => el->setAttribute(attrName, v))
     None
-  | (Multiple(_), None) =>
+  | (Many(_), None) =>
     Console.error("Elym: attr - getter not supported on multiple elements.")
     None
   }
@@ -341,13 +341,13 @@ let attributed: (selection, string, ~exists: bool=?) => (selection, option<bool>
   | (Single(None), _) =>
     Console.error("Elym: attributed - Single element is None.")
     None
-  | (Multiple(elements), Some(true)) =>
+  | (Many(elements), Some(true)) =>
     elements->Array.forEach(el => el->setAttribute(attrName, ""))
     None
-  | (Multiple(elements), Some(false)) =>
+  | (Many(elements), Some(false)) =>
     elements->Array.forEach(el => el->removeAttribute(attrName))
     None
-  | (Multiple(_), None) =>
+  | (Many(_), None) =>
     Console.error("Elym: attributed - getter not supported on multiple elements.")
     None
   }
@@ -383,13 +383,13 @@ let classed: (selection, string, ~exists: bool=?) => (selection, option<bool>) =
   | (Single(None), _) =>
     Console.error("Elym: classed - Single element is None.")
     None
-  | (Multiple(elements), Some(true)) =>
+  | (Many(elements), Some(true)) =>
     elements->Array.forEach(el => el->classList->add([className]))
     None
-  | (Multiple(elements), Some(false)) =>
+  | (Many(elements), Some(false)) =>
     elements->Array.forEach(el => el->classList->removeToken([className]))
     None
-  | (Multiple(_), None) =>
+  | (Many(_), None) =>
     Console.error("Elym: classed - getter not supported on multiple elements.")
     None
   }
@@ -411,7 +411,7 @@ let replaceClass: (selection, string, string) => selection = (selection, oldClas
   switch selection {
   | Single(Some(el)) => el->classList->replace(oldClass, newClass)
   | Single(None) => Console.error("Elym: replaceClass - Single element is None")
-  | Multiple(elements) => elements->Array.forEach(el => el->classList->replace(oldClass, newClass))
+  | Many(elements) => elements->Array.forEach(el => el->classList->replace(oldClass, newClass))
   }
   selection
 }
@@ -465,10 +465,10 @@ let property: (selection, string, ~value: propertyValue=?) => (selection, option
   | (Single(None), _) =>
     Console.error("Elym: property - Single element is None.")
     None
-  | (Multiple(elements), Some(v)) =>
+  | (Many(elements), Some(v)) =>
     elements->Array.forEach(el => setValue(el, v)->ignore)
     None
-  | (Multiple(_), None) =>
+  | (Many(_), None) =>
     Console.error("Elym: property - getter not supported on multiple elements.")
     None
   }
@@ -507,10 +507,10 @@ let style: (selection, string, ~value: string=?) => (selection, option<string>) 
   | (Single(None), _) =>
     Console.error("Elym: style - Single element is None.")
     None
-  | (Multiple(elements), Some(v)) =>
+  | (Many(elements), Some(v)) =>
     elements->Array.forEach(el => setStyleValue(el, v))
     None
-  | (Multiple(_), None) =>
+  | (Many(_), None) =>
     Console.error("Elym: style - getter not supported on multiple elements.")
     None
   }
@@ -565,10 +565,10 @@ let styled: (selection, string, ~exists: bool=?) => (selection, option<bool>) = 
   | (Single(None), _) =>
     Console.error("Elym: styled - Single element is None.")
     None
-  | (Multiple(elements), Some(shouldExist)) =>
+  | (Many(elements), Some(shouldExist)) =>
     elements->Array.forEach(el => setStyle(el, shouldExist))
     None
-  | (Multiple(_), None) =>
+  | (Many(_), None) =>
     Console.error("Elym: styled - getter not supported on multiple elements.")
     None
   }
@@ -610,7 +610,7 @@ let on: (selection, string, Dom.event => unit) => selection = (selection, eventT
   switch selection {
   | Single(Some(el)) => addListener(el)
   | Single(None) => Console.error("Elym: on - Single element is None.")
-  | Multiple(elements) => elements->Array.forEach(addListener)
+  | Many(elements) => elements->Array.forEach(addListener)
   }
   selection
 }
@@ -654,7 +654,7 @@ let onAsync: (selection, string, Dom.event => promise<unit>) => selection = (sel
   switch selection {
   | Single(Some(el)) => addListener(el)
   | Single(None) => Console.error("Elym: onAsync - Single element is None.")
-  | Multiple(elements) => elements->Array.forEach(addListener)
+  | Many(elements) => elements->Array.forEach(addListener)
   }
   selection
 }
@@ -688,7 +688,7 @@ let off: (selection, string) => selection = (selection, eventType) => {
   switch selection {
   | Single(Some(el)) => removeListener(el)
   | Single(None) => Console.error("Elym: off - Single element is None.")
-  | Multiple(elements) => elements->Array.forEach(removeListener)
+  | Many(elements) => elements->Array.forEach(removeListener)
   }
   selection
 }
@@ -750,9 +750,9 @@ let append: (selection, element) => selection = (selection, elementType) => {
   | Single(None) =>
     Console.error("Elym: append - Single element is None.")
     Single(None)
-  | Multiple(elements) =>
+  | Many(elements) =>
     let newElements = elements->Array.map(appendElement)
-    Multiple(newElements)
+    Many(newElements)
   }
 }
 
@@ -779,13 +779,13 @@ let appendChildren: (selection, array<Dom.element>) => selection = (selection, c
   switch selection {
   | Single(Some(el)) =>
     let newElements = appendToElement(el)
-    Multiple(newElements)
+    Many(newElements)
   | Single(None) =>
     Console.error("Elym: appendChildren - Single element is None.")
-    Multiple([])
-  | Multiple(elements) =>
+    Many([])
+  | Many(elements) =>
     let newElements = elements->Array.flatMap(el => appendToElement(el))
-    Multiple(newElements)
+    Many(newElements)
   }
 }
 
@@ -850,7 +850,7 @@ let each: (selection, (Dom.element, int) => unit) => selection = (selection, fun
     func(el, 0)
   | Single(None) =>
     Console.error("Elym: each - Single element is None.")
-  | Multiple(elements) =>
+  | Many(elements) =>
     elements->Array.forEachWithIndex((el, i) => {
       func(el, i)
     })
@@ -957,7 +957,7 @@ let removeWithListeners: selection => unit = selection => {
   switch selection {
   | Single(Some(el)) => removeSingleElement(el)
   | Single(None) => Console.error("Elym: removeWithListeners - Single element is None.")
-  | Multiple(elements) => elements->Array.forEach(removeSingleElement)
+  | Many(elements) => elements->Array.forEach(removeSingleElement)
   }
 }
 

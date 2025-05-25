@@ -3,7 +3,7 @@
  */
 type selection =
   | Single(option<Dom.element>)
-  | Multiple(array<Dom.element>)
+  | Many(array<Dom.element>)
 
 /**
  * Represents a selector for DOM elements.

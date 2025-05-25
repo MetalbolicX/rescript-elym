@@ -46,7 +46,7 @@ test("DOM element exists and check the id, textContent and data-id", () => {
   switch selection {
   | Single(Some(_)) => passWith("The container elemment exists in the DOM") //isTruthy(true, ~message="The container element exists in the DOM.")
   | Single(None) => failWith("The container element does not exist in the DOM.")
-  | Multiple(_) => failWith("Elym select method is not capable of selecting multiple elements.")
+  | Many(_) => failWith("Elym select method is not capable of selecting multiple elements.")
   }
 
   let (_, id) = selection->Elym.attr("id")
@@ -96,14 +96,14 @@ test("selectAll and selectChildren correctly select elements", () => {
 
   let selection = Elym.selectAll("div")
   switch selection {
-  | Multiple(elements) =>
+  | Many(elements) =>
     isIntEqualTo(elements->Array.length, 1, ~message="selectAll correctly selects one div element.")
   | _ => failWith("selectAll did not return the expected Multiple selection.")
   }
 
   let childSelection = Elym.select(Selector("div"))->Elym.selectChildren("textarea")
   switch childSelection {
-  | Multiple(elements) =>
+  | Many(elements) =>
     isIntEqualTo(
       elements->Array.length,
       1,
@@ -241,7 +241,7 @@ test("on and off correctly add and remove event listeners", () => {
       !isClicked.contents->isTruthy(~message="off correctly removed the click event listener.")
     }
   | Single(None) => failWith("Expected a single element.")
-  | Multiple(_) => failWith("Elym select method is not capable of selecting multiple elements.")
+  | Many(_) => failWith("Elym select method is not capable of selecting multiple elements.")
   }
 
   container->teardown
@@ -286,7 +286,7 @@ testAsync("onAsync correctly adds and removes asynchronous event listeners", (do
       !isClicked.contents->isTruthy(~message="onAsync correctly removed the click event listener.")
     }
   | Single(None) => failWith("Expected a single element.")
-  | Multiple(_) => failWith("Elym select method is not capable of selecting multiple elements.")
+  | Many(_) => failWith("Elym select method is not capable of selecting multiple elements.")
   }
 
   container->teardown
