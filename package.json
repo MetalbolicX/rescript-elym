@@ -1,6 +1,6 @@
 {
   "name": "rescript-elym",
-  "description": "A ReScript v11 library for creating and manipulating HTML elements using a syntax similar to d3.js or jQuery.",
+  "description": "A ReScript v11 module that allows you to manipulate the DOM and change attributes, styles, properties, HTML or text using a d3.js like syntax.",
   "version": "1.1.0",
   "scripts": {
     "rd:build": "rolldown ./example/Index.res.mjs --file ./dist/main.js --format es",
