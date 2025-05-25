@@ -59,4 +59,85 @@ switch paragraph {
 }
 ```
 
+#### `selectChild`
+
+**Description:**
+Selects a single child element of the current selection.
+
+Accepted argument:
+- `string`: A CSS selector string to match the child element, e.g. `"div"` or `".child"`.
+
+**Returns:**
+A `Single(option<Dom.element>)` selection of the child element.
+
+**Signature:**
+```txt
+let selectChild: string => selection
+```
+
+**Example:**
+```txt
+let parent = Elym.select(Selector("#parent"))
+let child = parent->Elym.selectChild(".child")
+```
+
 ### Multiple selection functions
+
+#### `selectAll`
+
+**Description:**
+Selects multiple DOM elements at `document` level.
+
+Accepted argument (`type selectors = Selector(string) | List(Dom.nodeList)` variant):
+
+- `Selector(string)`: Pass a CSS selector string, e.g. `Selector(".items")`.
+- `List(Dom.nodeList)`: Pass a NodeList, e.g. `List(myNodeList)`.
+
+**Returns:**
+A `Many(array<Dom.element>)` selection containing all matching elements.
+
+**Signature:**
+```txt
+let selectAll: selectors => selection
+```
+
+**Example:**
+```txt
+// Select all elements with the class "item"
+let items = Elym.selectAll(Selector(".item"))
+// Select all <li> elements in a list
+let listItems = Elym.selectAll(Selector("ul li"))
+```
+
+#### `selectChildren`
+
+**Description:**
+Selects multiple child elements of the current selection.
+
+Accepted argument:
+- `string`: A CSS selector string to match child elements, e.g. `"div"` or `".child"`.
+
+**Returns:**
+A `Many(array<Dom.element>)` selection of the child elements.
+
+**Signature:**
+```txt
+let selectChildren: string => selection
+```
+
+**Example:**
+```txt
+let parent = Elym.select(Selector("#parent"))
+let children = parent->Elym.selectChildren(".child")
+```
+
+## Modifying Elements Functions
+
+After selecting elements, you can modify them using various functions. These functions allow you to append new elements, set attributes, styles, and more.
+
+### Appending Elements
+
+#### `append`
+
+**Description:**
+Appends a new element to the current selection.
