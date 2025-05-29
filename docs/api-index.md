@@ -72,7 +72,7 @@ A `Single(option<Dom.element>)` selection of the child element.
 
 **Signature:**
 ```txt
-let selectChild: string => selection
+let selectChild: (selection, string) => selection
 ```
 
 **Example:**
@@ -122,7 +122,7 @@ A `Many(array<Dom.element>)` selection of the child elements.
 
 **Signature:**
 ```txt
-let selectChildren: string => selection
+let selectChildren: (selection, string) => selection
 ```
 
 **Example:**
@@ -141,3 +141,141 @@ After selecting elements, you can modify them using various functions. These fun
 
 **Description:**
 Appends a new element to the current selection.
+
+Accepted argument (`type element = Dom(Dom.element) | Tag(string)` variant):
+
+- `Dom(Dom.element)`: Pass a direct reference to a DOM element, e.g. `Dom(myElement)`.
+- `Tag(string)`: Pass a tag name string, e.g. `Tag("div")` or `Tag("span")`.
+
+**Returns:**
+A `selection` representing the updated selection after appending the new element.
+
+**Signature:**
+```txt
+let append: (selection, element) => selection
+```
+
+**Example:**
+```txt
+// Append a new element using a tag name
+Elym.select(Selector("svg"))->Elym.append(Tag("circle"))->ignore
+
+// Append an element using a direct DOM reference
+let existingElement = document->createElement("span")
+select(Selector("div"))->append(Dom(existingElement))->ignore
+```
+
+#### `appendChildren`
+
+**Description:**
+Appends multiple new elements to the current selection.
+
+Accepted argument:
+- `array<Dom.element>`: An array of DOM elements to append.
+
+**Returns:**
+A `selection` representing the updated selection after appending the new elements.
+
+**Signature:**
+```txt
+let appendChildren: (selection, array<Dom.element>) => selection
+```
+
+**Example:**
+```txt
+let newElements = [document->createElement("div"), document->createElement("span")]
+Elym.select(Selector("#container"))->Elym.appendChildren(newElements)->ignore
+```
+
+#### `create`
+
+**Description:**
+Creates a new element from a tag or a whole DOM node fragment.
+
+Accepted argument (`type elementCreator = Tag(string) | Template(string)` variant):
+
+- `Tag(string)`: Pass a tag name string, e.g. `Tag("div")` or `Tag("span")`.
+- `Template(string)`: Pass a template string containing HTML, e.g. `Template("<div class='item'>Item</div>")`.
+
+::: details
+In order to use create elements with a given namespace, you need to write the prefix of the namespace in the tag name, e.g. `Tag("svg:circle")` for an SVG circle element.
+:::
+
+**Returns:**
+A `optiona<Dom.element>` representing the newly created element.
+
+**Signature:**
+```txt
+let create: elementCreator => option<Dom.element>
+```
+
+**Example:**
+```txt
+// Create a new div element
+let newDiv = Elym.create(Tag("div"))
+switch newDiv {
+| Some(el) => Elym.select(Dom(el))->Elym.append(Dom(el))->ignore
+| None => () // Handle case where element creation failed
+}
+
+// Create a new element from a template string
+let newElement = Elym.create(Template("<li class='item'>Item 1</li><li class='item'>Item 2</li>"))
+switch newElement {
+| Some(el) => Elym.select(Selector("#list"))->Elym.append(Dom(el))->ignore
+| None => () // Handle case where element creation failed
+}
+
+// Create an SVG circle element
+let svgCircle = Elym.create(Tag("svg:circle"))
+switch svgCircle {
+| Some(el) => Elym.select(Selector("svg"))->Elym.append(Dom(el))->ignore
+| None => () // Handle case where element creation failed
+}
+```
+### Setting Attributes and Styles
+
+#### `attr`
+
+**Description:**
+Work as a setter or getter for attributes on the selected elements.
+
+Arguments accpeted:
+- `string`: The name of the attribute to set or get.
+- `~value: string =?`: The value to set the attribute to when it is used as a setter.
+
+::: details
+When ~value is not provided, the function acts as a getter and returns the current value of the attribute.
+:::
+
+**Returns:**
+A tuple `(selection, option<string>)` where:
+- The first element is the updated `selection`.
+- The second element is an `option<string>` containing the current value of the attribute (or `None` if not set).
+
+**Signature:**
+```txt
+let attr: (selection, string, ~value: string=?) => (selection, option<string>)
+```
+
+**Example:**
+```txt
+// Set an attribute
+let updatedSelection = Elym.select(Selector("#myElement"))->Elym.attr("data-custom", ~value="myValue")
+switch updatedSelection {
+| (sel, Some(value)) => {
+    // Successfully set the attribute
+    Console.log("Attribute set to: " ++ value)
+  }
+| (sel, None) => {
+    // Attribute was not set
+    Console.log("Attribute not set")
+  }
+}
+
+// Get an attribute
+let (sel, attrValue) = Elym.select(Selector("#myElement"))->Elym.attr("data-custom")
+switch attrValue {
+| Some(value) => Console.log("Attribute value: " ++ value)
+| None => Console.log("Attribute not found")
+}
+```

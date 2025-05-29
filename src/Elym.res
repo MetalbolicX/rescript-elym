@@ -714,7 +714,7 @@ let off: (selection, string) => selection = (selection, eventType) => {
  * // Append an SVG circle to an SVG element
  * select(Selector("svg"))->append(Tag("circle"))->ignore
  * // Append an existing DOM element
- * let existingElement = document->Document.createElement("span")
+ * let existingElement = document->createElement("span")
  * select(Selector("div"))->append(Dom(existingElement))->ignore
  * ```
  */
