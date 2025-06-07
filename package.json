@@ -8,9 +8,7 @@
     "res:clean": "rescript clean",
     "res:dev": "rescript -w",
     "res:test": "retest --with-dom test/**/*.res.mjs",
-    "docs:dev": "vitepress dev docs",
-    "docs:build": "vitepress build docs",
-    "docs:preview": "vitepress preview docs"
+    "docs": "docsify serve docs"
   },
   "keywords": [
     "rescript"
@@ -32,8 +30,6 @@
   },
   "devDependencies": {
     "rescript-test": "^7.0.1",
-    "rolldown": "^1.0.0-beta.9",
-    "vitepress": "^1.6.3",
-    "vitepress-plugin-group-icons": "^1.5.5"
+    "rolldown": "^1.0.0-beta.9"
   }
 }

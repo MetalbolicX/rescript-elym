@@ -1,50 +1,55 @@
-# ResForge
+# rescript-elym
 
-> ResForge is a ReScript library that provides a fluent, type-safe API for DOM manipulation, inspired by [d3.js selection module](https://github.com/d3/d3-selection).
+## Description
 
-**Supported Versions:**
-
-![ReScript](https://img.shields.io/badge/ReScript->=11.0.0-blue)
-
-## What problem ResForge solves?
-
+Elym (short for "element manipulator") provides ReScript v11 bindings for DOM manipulation using the syntax inspired by [d3.js selection module](https://github.com/d3/d3-selection).
 Many developers are eager to try ReScript, but often find themselves spending more time writing external bindings for JavaScript than building their actual applications. Elym solves this problem for front-end web development by providing a fluent, type-safe API for selecting, manipulating, and managing DOM elements—so you can focus on building great apps, no more manual boring typing code.
 
-## Why ResForge?
+## Why Elym?
 
 * **Fluent API**: Chain methods for concise, readable code.
 * **Type Safety**: Leverage ReScript's type system to catch errors at compile time.
 * **Event Management**: Automatic cleanup of event listeners when elements are removed.
 * **Familiar Pattern**: If you're familiar with d3.js selections, you'll feel right at home.
 
-## Quick Installation
+## Installation
 
 ### 1. Create a ReScript Application
 
-First, create a new ReScript application using one of the following commands:
+Use one of the following commands:
 
 ```sh
 npm create rescript-app@latest
 ```
+```sh
+pnpm create rescript-app
+```
+```sh
+bun create rescript-app
+```
 
-> [!NOTE]
-> For more information on setting up a ReScript project, refer to the [official ReScript documentation](https://rescript-lang.org/docs/manual/latest/installation).
+For more information on setting up a ReScript project, refer to the official [ReScript documentation](https://rescript-lang.org/docs/manual/v11.0.0/installation).
 
-### 2. Install the ResForge Package
+### 2. Install the Elym package
 
 Add the required dependencies to your project.
 
 ```sh
-npm i resforge
+npm install rescript-elym
+```
+```sh
+pnpm add rescript-elym
+```
+```sh
+bun add rescript-elym
 ```
 
 ### 3. Update Configuration
-
 In your `rescript.json` file, add the following dependency:
 
-```json
+```sh
 {
-  "bs-dependencies": ["resforge"]
+  "bs-dependencies": ["rescript-elym"]
 }
 ```
 
@@ -288,19 +293,24 @@ ReScript needs to be compiled to JavaScript in order to see the application in t
 
 ## Build and Run
 
-To build and run your ReScript application, see the [Compile and Run](https://metalbolicx.github.io/resforge/#/compile-run) section.
+Development Mode
 
-## Documentation
+Start the ReScript compiler in watch mode:
+```sh
+npm run res:dev
+```
+Build for Production
 
-<div align="center">
+Generate optimized JavaScript files:
+```res
+npm run res:build
+```
+Bundle for Browser
 
-[![view - Documentation](https://img.shields.io/badge/view-Documentation-blue?style=for-the-badge)](https://metalbolicx.github.io/resforge/#/api-index)
-
-</div>
-
-## Do you want to learn more?
-
-- Explore the [ReScript documentation](https://rescript-lang.org/docs/manual/v11.0.0/introduction) for more details on the language and its features.
+Using [Bun](https://bun.sh/docs/bundler) (or any bundler of your choice):
+```sh
+bun build ./src/Index.res.mjs --outdir ./dist --format esm
+```
 
 ## Contributing
 
@@ -312,6 +322,6 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## License
 
-Released under [MIT](/LICENSE) by [@MetalbolicX](https://github.com/MetalbolicX).
+This project is licensed under the [MIT License](https://opensource.org/license/mit). See the LICENSE file for details.
 
 
