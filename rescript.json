@@ -1,5 +1,5 @@
 {
-  "name": "rescript-elym",
+  "name": "resforge",
   "sources": [
     { "dir": "src", "subdirs": true },
     { "dir": "test", "subdirs": true, "type": "dev" },
