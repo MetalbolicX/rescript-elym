@@ -11,18 +11,55 @@
     />
     <link
       rel="stylesheet"
-      href="//cdn.jsdelivr.net/npm/docsify@4/lib/themes/vue.css"
+      href="https://cdn.jsdelivr.net/npm/docsify-themeable@0/dist/css/theme-simple.css"
     />
+    <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <div id="app"></div>
-    <script>
+    <script type="text/javascript" lang="javascript">
       window.$docsify = {
-        name: "",
-        repo: "",
+        name: "ResForge",
+        repo: "https://github.com/MetalbolicX/resforge.git",
+        loadSidebar: true,
+        tabs: {
+          persist: true, // default
+          sync: true, // default
+          theme: "classic", // default
+          tabComments: true, // default
+          tabHeadings: true, // default
+        },
       };
     </script>
-    <!-- Docsify v4 -->
-    <script src="//cdn.jsdelivr.net/npm/docsify@4"></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/docsify@4"
+      type="text/javascript"
+      lang="javascript"
+    ></script>
+    <script
+      src="https://unpkg.com/docsify-tabs@1.6.3/dist/docsify-tabs.min.js"
+      type="text/javascript"
+      lang="javascript"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/docsify-pagination@2.10.1/dist/docsify-pagination.min.js"
+      type="text/javascript"
+      lang="javascript"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-json.min.js"
+      type="text/javascript"
+      lang="javascript"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-bash.min.js"
+      type="text/javascript"
+      lang="javascript"
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/prismjs@1.30.0/components/prism-reason.min.js"
+      type="text/javascript"
+      lang="javascript"
+    ></script>
   </body>
 </html>

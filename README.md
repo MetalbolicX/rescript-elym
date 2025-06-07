@@ -313,5 +313,3 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 ## License
 
 Released under [MIT](/LICENSE) by [@MetalbolicX](https://github.com/MetalbolicX).
-
-
