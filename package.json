@@ -1,9 +1,9 @@
 {
-  "name": "rescript-elym",
+  "name": "resforge",
   "description": "A ReScript v11 module that allows you to manipulate the DOM and change attributes, styles, properties, HTML or text using a d3.js like syntax.",
   "version": "1.1.0",
   "scripts": {
-    "rd:build": "rolldown ./example/Index.res.mjs --file ./example/main.js --format es",
+    "res:bundle": "rolldown ./example/Index.res.mjs --file ./example/main.js --format es",
     "res:build": "rescript",
     "res:clean": "rescript clean",
     "res:dev": "rescript -w",
@@ -18,10 +18,10 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/MetalbolicX/rescript-elym.git"
+    "url": "https://github.com/MetalbolicX/resforge.git"
   },
   "bugs": {
-    "url": "https://github.com/MetalbolicX/rescript-elym/issues"
+    "url": "https://github.com/MetalbolicX/resforge/issues"
   },
   "license": "MIT",
   "dependencies": {
