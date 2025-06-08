@@ -54,10 +54,12 @@ To get started with ResForge, let's create a simple **Hello World** example.
 
 ```reason
 ResForge.select(Selector("body"))
-  -> ResForge.append(Tag("h1"))
-  -> ResForge.text("Hello World!")
-  -> ignore
+  ->ResForge.append(Tag("h1"))
+  ->ResForge.text("Hello World!")
+  ->ignore
 ```
+
+This code selects the `body` element, appends an `<h1>` tag, sets its text content to "Hello World!", and ignores the result since we don't need to use it further.
 
 ## Build and Run
 
