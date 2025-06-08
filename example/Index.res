@@ -7,7 +7,7 @@ external getTextAreaTarget: Dom.event => Dom.eventTarget_like<Dom.htmlTextAreaEl
 external setDisabled: (Dom.eventTarget_like<Dom.htmlTextAreaElement>, bool) => unit = "disabled"
 
 let createTask: string => option<Dom.element> = content => {
-  let node = Elym.create(
+  let node = ResForge.create(
     Template(
       `
     <li class="todo__list-task">
@@ -22,25 +22,25 @@ let createTask: string => option<Dom.element> = content => {
   switch node {
   | None => ()
   | Some(n) => {
-      Elym.select(Dom(n))
-      ->Elym.selectChild(".todo__list-task-button-edit")
-      ->Elym.on("click", _ => {
-        Elym.select(Dom(n))
-        ->Elym.selectChild(".todo__list-task-description")
-        ->Elym.attributed("disabled", ~exists=false)
+      ResForge.select(Dom(n))
+      ->ResForge.selectChild(".todo__list-task-button-edit")
+      ->ResForge.on("click", _ => {
+        ResForge.select(Dom(n))
+        ->ResForge.selectChild(".todo__list-task-description")
+        ->ResForge.attributed("disabled", ~exists=false)
         ->ignore
       })
       ->ignore
 
-      Elym.select(Dom(n))
-      ->Elym.selectChild(".todo__list-task-description")
-      ->Elym.on("blur", (evt: Dom.event) => evt->getTextAreaTarget->setDisabled(true))
+      ResForge.select(Dom(n))
+      ->ResForge.selectChild(".todo__list-task-description")
+      ->ResForge.on("blur", (evt: Dom.event) => evt->getTextAreaTarget->setDisabled(true))
       ->ignore
 
-      Elym.select(Dom(n))
-      ->Elym.selectChild(".todo__list-task-button-delete")
-      ->Elym.on("click", _ => {
-        Elym.select(Dom(n))->Elym.remove
+      ResForge.select(Dom(n))
+      ->ResForge.selectChild(".todo__list-task-button-delete")
+      ->ResForge.on("click", _ => {
+        ResForge.select(Dom(n))->ResForge.remove
       })
       ->ignore
     }
@@ -48,27 +48,27 @@ let createTask: string => option<Dom.element> = content => {
   node
 }
 
-let formTodoInput = Elym.select(Selector("#todo__form-input"))
-let formButtonAddTodo = Elym.select(Selector("#todo__form-add-task-button"))
-let todoList = Elym.select(Selector("#todo__list"))
+let formTodoInput = ResForge.select(Selector("#todo__form-input"))
+let formButtonAddTodo = ResForge.select(Selector("#todo__form-add-task-button"))
+let todoList = ResForge.select(Selector("#todo__list"))
 
 formTodoInput
-->Elym.on("input", (evt: Dom.event) => {
+->ResForge.on("input", (evt: Dom.event) => {
   if evt->getInputTarget->getInputValue->String.length > 3 {
-    formButtonAddTodo->Elym.attributed("disabled", ~exists=false)->ignore
+    formButtonAddTodo->ResForge.attributed("disabled", ~exists=false)->ignore
   } else {
-    formButtonAddTodo->Elym.attributed("disabled", ~exists=true)->ignore
+    formButtonAddTodo->ResForge.attributed("disabled", ~exists=true)->ignore
   }
 })
 ->ignore
 
 formButtonAddTodo
-->Elym.on("click", _ => {
-  switch formTodoInput->Elym.property("value") {
+->ResForge.on("click", _ => {
+  switch formTodoInput->ResForge.property("value") {
   | (_, Some(String(txt))) => {
       let task = createTask(txt)
       switch task {
-      | Some(el) => todoList->Elym.append(Dom(el))->ignore
+      | Some(el) => todoList->ResForge.append(Dom(el))->ignore
       | None => ()
       }
     }
