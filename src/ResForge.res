@@ -39,7 +39,7 @@ let listeners: listenerMap = WeakMap.make()
 
 
 // Random function
-@val @scope(("window", "crypto"))
+@val @scope("crypto")
 external randomUUID: unit => string = "randomUUID"
 
 // Selectors
