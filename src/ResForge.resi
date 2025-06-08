@@ -144,6 +144,26 @@ let on: (selection, string, Dom.event => unit) => selection
 let onAsync: (selection, string, Dom.event => promise<unit>) => selection
 
 /**
+ * Adds an event listener that triggers only after the event has occurred a specified number of times.
+ * @param {selection} selection - The current selection.
+ * @param {string} eventType - The type of event to listen for.
+ * @param {Dom.event => unit} callback - The callback function to execute when the event occurs.
+ * @param {~times: int=} - Optional number of times the event must occur before the callback is executed.
+ * @return {selection} - The updated selection.
+ */
+let onNthTimes: (selection, string, Dom.event => unit, ~times: int=?) => selection
+
+/**
+ * Adds an asynchronous event listener that triggers only after the event has occurred a specified number of times.
+ * @param {selection} selection - The current selection.
+ * @param {string} eventType - The type of event to listen for.
+ * @param {Dom.event => promise<unit>} callback - The asynchronous callback function to execute when the event occurs.
+ * @param {~times: int=} - Optional number of times the event must occur before the callback is executed.
+ * @return {selection} - The updated selection.
+ */
+let onAsyncNthTimes: (selection, string, Dom.event => promise<unit>, ~times: int=?) => selection
+
+/**
  * Gets or sets a property of the selected element(s).
  * @param {selection} selection - The current selection.
  * @param {string} propName - The name of the property.

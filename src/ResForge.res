@@ -137,9 +137,9 @@ external assign: ('a, 'a) => 'a = "assign"
  * @example
  * ```res
  * // Using a css selector
- * let container = Elym.select(Selector("#app"))
+ * let container = ResForge.select(Selector("#app"))
  * // or use pass a Dom element, assuming list is an element
- * let list = Elym.select(Dom(list))
+ * let list = ResForge.select(Dom(list))
  * ```
  */
 let select: selector => selection = selector => {
@@ -156,9 +156,9 @@ let select: selector => selection = selector => {
  * @example
  * ```res
  * // Using a css selector
- * let containers = Elym.selectAll(Selector(".container"))
+ * let containers = ResForge.selectAll(Selector(".container"))
  * // or use pass a Dom element, assuming list is an element
- * let lists = Elym.selectAll(List(list))
+ * let lists = ResForge.selectAll(List(list))
  * ```
  */
 let selectAll: selectors => selection = selector => {
@@ -236,13 +236,13 @@ let text: (selection, ~content: string=?) => (selection, option<string>) = (sele
   | (Single(Some(el)), None) =>
     Some(el->getTextContent)
   | (Single(None), _) =>
-    Console.error("Elym: text - Single element is None.")
+    Console.error("ResForge: text - Single element is None.")
     None
   | (Many(elements), Some(text)) =>
     elements->Array.forEach(el => el->setTextContent(text))
     None
   | (Many(_), None) =>
-    Console.error("Elym: text - getter not supported on multiple elements.")
+    Console.error("ResForge: text - getter not supported on multiple elements.")
     None
   }
   (selection, result)
@@ -277,13 +277,13 @@ let html: (selection, ~content: string=?) => (selection, option<string>) = (sele
   | (Single(Some(el)), None) =>
     Some(el->innerHTML)
   | (Single(None), _) =>
-    Console.error("Elym: html - Single element is None.")
+    Console.error("ResForge: html - Single element is None.")
     None
   | (Many(elements), Some(htmlContent)) =>
     elements->Array.forEach(el => el->setHtml(htmlContent))
     None
   | (Many(_), None) =>
-    Console.error("Elym: html - getter not supported on multiple elements.")
+    Console.error("ResForge: html - getter not supported on multiple elements.")
     None
   }
   (selection, result)
@@ -309,13 +309,13 @@ let attr: (selection, string, ~value: string=?) => (selection, option<string>) =
     None
   | (Single(Some(el)), None) =>el->getAttribute(attrName)
   | (Single(None), _) =>
-    Console.error("Elym: attr - Single element is None.")
+    Console.error("ResForge: attr - Single element is None.")
     None
   | (Many(elements), Some(v)) =>
     elements->Array.forEach(el => el->setAttribute(attrName, v))
     None
   | (Many(_), None) =>
-    Console.error("Elym: attr - getter not supported on multiple elements.")
+    Console.error("ResForge: attr - getter not supported on multiple elements.")
     None
   }
   (selection, result)
@@ -348,7 +348,7 @@ let attributed: (selection, string, ~exists: bool=?) => (selection, option<bool>
   | (Single(Some(el)), None) =>
     Some(el->hasAttribute(attrName))
   | (Single(None), _) =>
-    Console.error("Elym: attributed - Single element is None.")
+    Console.error("ResForge: attributed - Single element is None.")
     None
   | (Many(elements), Some(true)) =>
     elements->Array.forEach(el => el->setAttribute(attrName, ""))
@@ -357,7 +357,7 @@ let attributed: (selection, string, ~exists: bool=?) => (selection, option<bool>
     elements->Array.forEach(el => el->removeAttribute(attrName))
     None
   | (Many(_), None) =>
-    Console.error("Elym: attributed - getter not supported on multiple elements.")
+    Console.error("ResForge: attributed - getter not supported on multiple elements.")
     None
   }
   (selection, result)
@@ -390,7 +390,7 @@ let classed: (selection, string, ~exists: bool=?) => (selection, option<bool>) =
   | (Single(Some(el)), None) =>
     Some(el->classList->contains(className))
   | (Single(None), _) =>
-    Console.error("Elym: classed - Single element is None.")
+    Console.error("ResForge: classed - Single element is None.")
     None
   | (Many(elements), Some(true)) =>
     elements->Array.forEach(el => el->classList->add([className]))
@@ -399,7 +399,7 @@ let classed: (selection, string, ~exists: bool=?) => (selection, option<bool>) =
     elements->Array.forEach(el => el->classList->removeToken([className]))
     None
   | (Many(_), None) =>
-    Console.error("Elym: classed - getter not supported on multiple elements.")
+    Console.error("ResForge: classed - getter not supported on multiple elements.")
     None
   }
   (selection, result)
@@ -419,7 +419,7 @@ let classed: (selection, string, ~exists: bool=?) => (selection, option<bool>) =
 let replaceClass: (selection, string, string) => selection = (selection, oldClass, newClass) => {
   switch selection {
   | Single(Some(el)) => el->classList->replace(oldClass, newClass)
-  | Single(None) => Console.error("Elym: replaceClass - Single element is None")
+  | Single(None) => Console.error("ResForge: replaceClass - Single element is None")
   | Many(elements) => elements->Array.forEach(el => el->classList->replace(oldClass, newClass))
   }
   selection
@@ -472,13 +472,13 @@ let property: (selection, string, ~value: propertyValue=?) => (selection, option
   | (Single(Some(el)), None) =>
     getValue(el)
   | (Single(None), _) =>
-    Console.error("Elym: property - Single element is None.")
+    Console.error("ResForge: property - Single element is None.")
     None
   | (Many(elements), Some(v)) =>
     elements->Array.forEach(el => setValue(el, v)->ignore)
     None
   | (Many(_), None) =>
-    Console.error("Elym: property - getter not supported on multiple elements.")
+    Console.error("ResForge: property - getter not supported on multiple elements.")
     None
   }
   (selection, result)
@@ -514,13 +514,13 @@ let style: (selection, string, ~value: string=?) => (selection, option<string>) 
   | (Single(Some(el)), None) =>
     Some(getStyleValue(el))
   | (Single(None), _) =>
-    Console.error("Elym: style - Single element is None.")
+    Console.error("ResForge: style - Single element is None.")
     None
   | (Many(elements), Some(v)) =>
     elements->Array.forEach(el => setStyleValue(el, v))
     None
   | (Many(_), None) =>
-    Console.error("Elym: style - getter not supported on multiple elements.")
+    Console.error("ResForge: style - getter not supported on multiple elements.")
     None
   }
   (selection, result)
@@ -572,13 +572,13 @@ let styled: (selection, string, ~exists: bool=?) => (selection, option<bool>) = 
   | (Single(Some(el)), None) =>
     Some(checkStyle(el))
   | (Single(None), _) =>
-    Console.error("Elym: styled - Single element is None.")
+    Console.error("ResForge: styled - Single element is None.")
     None
   | (Many(elements), Some(shouldExist)) =>
     elements->Array.forEach(el => setStyle(el, shouldExist))
     None
   | (Many(_), None) =>
-    Console.error("Elym: styled - getter not supported on multiple elements.")
+    Console.error("ResForge: styled - getter not supported on multiple elements.")
     None
   }
   (selection, result)
@@ -618,7 +618,7 @@ let on: (selection, string, Dom.event => unit) => selection = (selection, eventT
 
   switch selection {
   | Single(Some(el)) => addListener(el)
-  | Single(None) => Console.error("Elym: on - Single element is None.")
+  | Single(None) => Console.error("ResForge: on - Single element is None.")
   | Many(elements) => elements->Array.forEach(addListener)
   }
   selection
@@ -662,11 +662,115 @@ let onAsync: (selection, string, Dom.event => promise<unit>) => selection = (sel
 
   switch selection {
   | Single(Some(el)) => addListener(el)
-  | Single(None) => Console.error("Elym: onAsync - Single element is None.")
+  | Single(None) => Console.error("ResForge: onAsync - Single element is None.")
   | Many(elements) => elements->Array.forEach(addListener)
   }
   selection
 }
+
+/**
+ * Adds an event listener that will be triggered only after the event has occurred a specified number of times.
+ * @param {selection} selection - The current selection.
+ * @param {string} eventType - The type of event to listen for.
+ * @param {Dom.event => unit} callback - The callback function to execute when the event occurs.
+ * @param {~times: int=} - Optional number of times the event must occur before the callback is executed.
+ * @return {selection} - The updated selection.
+ * @example
+ * ```res
+ * select(Selector("#myButton"))->onNthTimes("click", _ => {
+ *   Console.log("Button clicked 3 times!")
+ * }, ~times=3)->ignore
+ * ```
+ */
+let onNthTimes: (selection, string, Dom.event => unit, ~times: int=?) => selection = (selection, eventType, callback, ~times=1) => {
+  let addListener = el => {
+    let id = randomUUID()
+    let listenersForElement = switch WeakMap.get(listeners, el) {
+    | Some(dict) => dict
+    | None => {
+        let newDict = Dict.make()
+        WeakMap.set(listeners, el, newDict)->ignore
+        newDict
+      }
+    }
+    let listenersForEvent = switch Dict.get(listenersForElement, eventType) {
+    | Some(arr) => arr
+    | None => []
+    }
+
+    let count = ref(0)
+    let wrappedCallback = (event: Dom.event) => {
+      count := !count + 1
+      if !count >= times {
+        el->removeEventListener(eventType, wrappedCallback)
+      }
+      callback(event)
+    }
+
+    Dict.set(listenersForElement, eventType, [(id, wrappedCallback), ...listenersForEvent])
+    el->addEventListener(eventType, wrappedCallback)
+  }
+
+  switch selection {
+  | Single(Some(el)) => addListener(el)
+  | Single(None) => Console.error("ResForge: onNthTimes - Single element is None.")
+  | Many(elements) => elements->Array.forEach(addListener)
+  }
+  selection
+}
+
+/**
+ * Adds an asynchronous event listener that will be triggered only after the event has occurred a specified number of times.
+ * @param {selection} selection - The current selection.
+ * @param {string} eventType - The type of event to listen for.
+ * @param {Dom.event => promise<unit>} callback - The asynchronous callback function to execute when the event occurs.
+ * @param {~times: int=} - Optional number of times the event must occur before the callback is executed.
+ * @return {selection} - The updated selection.
+ * @example
+ * ```res
+ * select(Selector("#myButton"))->onAsyncNthTimes("click", async _ => {
+ *   await Js.Promise.resolve()
+ *   Console.log("Button clicked 3 times!")
+ * }, ~times=3)->ignore
+ * ```
+ */
+let onAsyncNthTimes: (selection, string, Dom.event => promise<unit>, ~times: int=?) => selection = (selection, eventType, callback, ~times=1) => {
+  let addListener = el => {
+    let id = randomUUID()
+    let listenersForElement = switch WeakMap.get(listeners, el) {
+    | Some(dict) => dict
+    | None => {
+        let newDict = Dict.make()
+        WeakMap.set(listeners, el, newDict)->ignore
+        newDict
+      }
+    }
+    let listenersForEvent = switch Dict.get(listenersForElement, eventType) {
+    | Some(arr) => arr
+    | None => []
+    }
+
+    let count = ref(0)
+    let wrappedCallback = (event: Dom.event) => {
+      count := !count + 1
+      if !count >= times {
+        el->removeEventListener(eventType, wrappedCallback)
+      }
+      callback(event)->ignore // Execute the promise but ignore its result
+    }
+
+    Dict.set(listenersForElement, eventType, [(id, wrappedCallback), ...listenersForEvent])
+    el->addEventListener(eventType, wrappedCallback)
+  }
+
+  switch selection {
+  | Single(Some(el)) => addListener(el)
+  | Single(None) => Console.error("ResForge: onAsyncNthTimes - Single element is None.")
+  | Many(elements) => elements->Array.forEach(addListener)
+  }
+  selection
+}
+
 
 /**
  * Removes event listeners of a specific type from the selected element(s).
@@ -696,7 +800,7 @@ let off: (selection, string) => selection = (selection, eventType) => {
   }
   switch selection {
   | Single(Some(el)) => removeListener(el)
-  | Single(None) => Console.error("Elym: off - Single element is None.")
+  | Single(None) => Console.error("ResForge: off - Single element is None.")
   | Many(elements) => elements->Array.forEach(removeListener)
   }
   selection
@@ -757,7 +861,7 @@ let append: (selection, element) => selection = (selection, elementType) => {
     let newEl = el->appendElement
     Single(Some(newEl))
   | Single(None) =>
-    Console.error("Elym: append - Single element is None.")
+    Console.error("ResForge: append - Single element is None.")
     Single(None)
   | Many(elements) =>
     let newElements = elements->Array.map(appendElement)
@@ -790,7 +894,7 @@ let appendChildren: (selection, array<Dom.element>) => selection = (selection, c
     let newElements = appendToElement(el)
     Many(newElements)
   | Single(None) =>
-    Console.error("Elym: appendChildren - Single element is None.")
+    Console.error("ResForge: appendChildren - Single element is None.")
     Many([])
   | Many(elements) =>
     let newElements = elements->Array.flatMap(el => appendToElement(el))
@@ -858,7 +962,7 @@ let each: (selection, (Dom.element, int) => unit) => selection = (selection, fun
   | Single(Some(el)) =>
     func(el, 0)
   | Single(None) =>
-    Console.error("Elym: each - Single element is None.")
+    Console.error("ResForge: each - Single element is None.")
   | Many(elements) =>
     elements->Array.forEachWithIndex((el, i) => {
       func(el, i)
@@ -905,13 +1009,13 @@ let createFromTemplate: string => option<Dom.element> = html => {
  * @example
  * ```res
  * // Create a single element
- * let divSelection = Elym.create(Tag("div"))
+ * let divSelection = ResForge.create(Tag("div"))
  *
  * // Create an SVG element
- * let svgCircle = Elym.create(Tag("svg:circle"))
+ * let svgCircle = ResForge.create(Tag("svg:circle"))
  *
  * // Create multiple elements from a template
- * let listItems = Elym.create(Template("<li>Item 1</li><li>Item 2</li><li>Item 3</li>"))
+ * let listItems = ResForge.create(Template("<li>Item 1</li><li>Item 2</li><li>Item 3</li>"))
  * ```
  */
 let create: elementCreator => option<Dom.element> = creator => {
@@ -965,7 +1069,7 @@ let removeWithListeners: selection => unit = selection => {
 
   switch selection {
   | Single(Some(el)) => removeSingleElement(el)
-  | Single(None) => Console.error("Elym: removeWithListeners - Single element is None.")
+  | Single(None) => Console.error("ResForge: removeWithListeners - Single element is None.")
   | Many(elements) => elements->Array.forEach(removeSingleElement)
   }
 }
