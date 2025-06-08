@@ -55,7 +55,7 @@ To get started with ResForge, let's create a simple **Hello World** example.
 ```reason
 ResForge.select(Selector("body"))
   ->ResForge.append(Tag("h1"))
-  ->ResForge.text("Hello World!")
+  ->ResForge.text(~content="Hello World!")
   ->ignore
 ```
 
