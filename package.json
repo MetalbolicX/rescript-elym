@@ -1,7 +1,7 @@
 {
   "name": "resforge",
-  "description": "A ReScript v11 module that allows you to manipulate the DOM and change attributes, styles, properties, HTML or text using a d3.js like syntax.",
-  "version": "1.1.0",
+  "description": "ResForge is package to manipulate the DOM to make front-end development easier and faster rather than writting JavaScript bindings manually.",
+  "version": "1.0.0",
   "scripts": {
     "res:bundle": "rolldown ./example/Index.res.mjs --file ./example/main.js --format es",
     "res:build": "rescript",
