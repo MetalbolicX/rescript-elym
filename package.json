@@ -32,5 +32,8 @@
   },
   "devDependencies": {
     "rescript-test": "^7.0.1"
+  },
+  "engines": {
+    "node": ">=14.0.0"
   }
 }
