@@ -1,6 +1,7 @@
 {
   "name": "resforge",
   "description": "ResForge is package to manipulate the DOM to make front-end development easier and faster rather than writting JavaScript bindings manually.",
+  "homepage": "https://metalbolicx.github.io/resforge/#/",
   "version": "1.0.0",
   "scripts": {
     "res:bundle": "deno bundle ./example/Index.res.mjs -o ./example/main.js",
