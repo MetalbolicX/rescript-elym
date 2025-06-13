@@ -10,14 +10,14 @@
 
 Many developers are eager to try ReScript, but often find themselves spending more time writing external bindings for JavaScript than building their actual applications. Elym solves this problem for front-end web development by providing a fluent, type-safe API for selecting, manipulating, and managing DOM elements—so you can focus on building great apps, no more manual boring typing code.
 
-## ResForge Features
+## Features
 
 * **Fluent API**: Chain methods for concise, readable code.
 * **Type Safety**: Leverage ReScript's type system to catch errors at compile time.
 * **Event Management**: Automatic cleanup of event listeners when elements are removed.
 * **Familiar Pattern**: If you're familiar with d3.js selections, you'll feel right at home.
 
-## Quick Installation
+## 🚀 Quick Installation
 
 ### 1. Create a ReScript Application
 
@@ -48,7 +48,7 @@ In your `rescript.json` file, add the following dependency:
 }
 ```
 
-## Hello World Example
+## 🙌 Hello World Example
 
 To get started with ResForge, let's create a simple **Hello World** example.
 
@@ -61,11 +61,11 @@ ResForge.select(Selector("body"))
 
 This code selects the `body` element, appends an `<h1>` tag, sets its text content to "Hello World!", and ignores the result since we don't need to use it further.
 
-## Build and Run
+## 🛠 Build and Run
 
 To build and run your ReScript application, see the [Compile and Run](https://metalbolicx.github.io/resforge/#/compile-run) section.
 
-## Documentation
+## 📚 Documentation
 
 <div align="center">
 
@@ -73,7 +73,7 @@ To build and run your ReScript application, see the [Compile and Run](https://me
 
 </div>
 
-## Do you want to learn more?
+## ✍ Do you want to learn more?
 
 - Explore the [ReScript documentation](https://rescript-lang.org/docs/manual/v11.0.0/introduction) for more details on the language and its features.
 
