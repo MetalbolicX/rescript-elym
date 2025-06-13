@@ -3,7 +3,7 @@
   "description": "ResForge is package to manipulate the DOM to make front-end development easier and faster rather than writting JavaScript bindings manually.",
   "version": "1.0.0",
   "scripts": {
-    "res:bundle": "rolldown ./example/Index.res.mjs --file ./example/main.js --format es",
+    "res:bundle": "deno bundle ./example/Index.res.mjs -o ./example/main.js",
     "res:build": "rescript",
     "res:clean": "rescript clean",
     "res:dev": "rescript -w",
@@ -13,6 +13,7 @@
   "keywords": [
     "rescript"
   ],
+  "files": ["src"],
   "author": {
     "name": "José Martínez Santana"
   },
@@ -29,7 +30,6 @@
     "rescript": "11.1.4"
   },
   "devDependencies": {
-    "rescript-test": "^7.0.1",
-    "rolldown": "^1.0.0-beta.9"
+    "rescript-test": "^7.0.1"
   }
 }
