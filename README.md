@@ -27,8 +27,7 @@ First, create a new ReScript application using one of the following commands:
 npm create rescript-app@latest
 ```
 
-> [!NOTE]
-> For more information on setting up a ReScript project, refer to the [official ReScript documentation](https://rescript-lang.org/docs/manual/latest/installation).
+> 📝 **Note:** For more information on setting up a ReScript project, refer to the [official ReScript documentation](https://rescript-lang.org/docs/manual/latest/installation).
 
 ### 2. Install the ResForge Package
 
@@ -52,7 +51,7 @@ In your `rescript.json` file, add the following dependency:
 
 To get started with ResForge, let's create a simple **Hello World** example.
 
-```reason
+```rescript
 ResForge.select(Selector("body"))
   ->ResForge.append(Tag("h1"))
   ->ResForge.text(~content="Hello World!")
