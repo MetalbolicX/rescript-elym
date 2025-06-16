@@ -74,7 +74,7 @@ To build and run your ReScript application, see the [Compile and Run](https://me
 
 ## ✍ Do you want to learn more?
 
-- Explore the [ReScript documentation](https://rescript-lang.org/docs/manual/v11.0.0/introduction) for more details on the language and its features.
+* Explore the [ReScript documentation](https://rescript-lang.org/docs/manual/v11.0.0/introduction) for more details on the language and its features.
 
 ## Contributing
 
@@ -82,7 +82,15 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## Technologies used
 
-* [ReScript](https://rescript-lang.org/), a strong typed functional programming language the compiles to JavaScript.
+<table style="border: none;">
+    <td align="center">
+      <a href="https://rescript-lang.org/" target="_blank">
+        <img src="https://rescript-lang.org/static/brand/rescript-brandmark.svg" alt="ReScript" width="42" height="42" /><br/>
+        <b>ReScript</b><br/>
+      </a>
+    </td>
+  </tr>
+</table>
 
 ## License
 
