@@ -28,11 +28,9 @@
     "url": "https://github.com/MetalbolicX/resforge/issues"
   },
   "license": "MIT",
-  "dependencies": {
-    "@rescript/core": "1.6.1",
-    "rescript": "11.1.4"
-  },
   "devDependencies": {
+    "@rescript/core": "^1.6.1",
+    "rescript": "^11.1.4",
     "rescript-test": "^7.0.1"
   },
   "engines": {
